@@ -13,6 +13,11 @@ export default function RootLayout ({ children }) {
         <Navbar />
         {children}
       </body>
+      <footer className='footer footer-center p-6'>
+        <aside>
+          <p>Open App Note</p>
+        </aside>
+      </footer>
     </html>
   )
 }

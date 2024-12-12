@@ -1,5 +1,10 @@
+import BomView from '@/app/ui/bom-view'
+import GerberViewer from '@/app/ui/gerber-viewer'
 import { supabaseService } from '@/lib/db'
-import { ExternalLink } from 'lucide-react'
+import { bucketName, s3Client } from '@/lib/s3'
+import { Download, ExternalLink } from 'lucide-react'
+import Papa from 'papaparse'
+const { ListObjectsV2Command } = require('@aws-sdk/client-s3')
 
 // Next.js will invalidate the cache when a
 // request comes in, at most once every 60 seconds.
@@ -11,44 +16,120 @@ export const revalidate = 60
 export const dynamicParams = true // or false, to 404 on unknown paths
 
 export async function generateStaticParams () {
-  const { data, error } = await supabaseService
+  const { data: designData, error: designError } = await supabaseService
     .from('design')
     .select('slug')
 
-  if (error) {
-    console.log(error)
+  if (designError) {
+    console.log(designError)
     return
   }
-  return data
+  return designData
 }
 
 async function getDesignEntry (slug) {
-  const { data, error } = await supabaseService
+  const { data: designData, error: designError } = await supabaseService
     .from('design')
     .select('*')
     .eq('slug', slug)
     .single()
 
-  if (error) {
-    console.log(error)
-    throw new Error(error.message)
+  if (designError) {
+    console.log(designError)
+    throw new Error(designError.message)
   }
-  return data
+
+  const { data: repoData, error: repoError } = await supabaseService
+    .from('repository')
+    .select('description, html_url')
+    .eq('id', designData.repository_id)
+    .single()
+
+  if (repoError) {
+    console.log(repoError)
+    throw new Error(repoError.message)
+  }
+  designData.description = repoData.description
+  designData.html_url = repoData.html_url
+  return designData
+}
+
+async function fetchCsvData (url) {
+  const response = await fetch(url)
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+  const text = await response.text()
+  const parsedData = Papa.parse(text, { header: true })
+  return parsedData
+}
+
+async function getGerberSvgs (designFullName) {
+  const params = {
+    Bucket: bucketName,
+    Prefix: `repositories/${designFullName}/svgs`
+  }
+
+  const command = new ListObjectsV2Command(params)
+  const data = await s3Client.send(command)
+  if (data.Contents == null) {
+    return
+  }
+
+  const files = data.Contents.filter(d => d.Key.includes('.svg'))
+  files.reverse()
+
+  const fetchedSvgs = await Promise.all(
+    files.map(async f => {
+      const url = `${process.env.DO_BUCKET_PATH}/${f.Key}`
+      const response = await fetch(url)
+      const content = await response.text()
+      return {
+        content,
+        hidden: false,
+        name: f.Key.split('/').pop()
+      }
+    })
+  )
+  return fetchedSvgs
 }
 
 export default async function ({ params }) {
   const slug = (await params).slug
   const design = await getDesignEntry(slug)
-  const pdfUrl = `https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${design.full_path}/${design.name}.pdf`
+  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${design.full_path}/${design.name}`
+  const pdfUrl = `${designUrl}.pdf`
+  const gerberUrl = `${designUrl}_gerbers.zip`
+  const bomUrl = `${designUrl}.csv`
+
+  const svgs = await getGerberSvgs(design.full_path)
+  const bomData = await fetchCsvData(bomUrl)
+
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>
-      <div className='flex items-center justify-between py-4'>
-        <h2 className='text-lg font-bold'>Schematic for {design.name}</h2>
+      <div className='flex items-start justify-between mt-6'>
+        <div>
+          <h1 className='text-3xl font-bold'>{design.name}</h1>
+          <p className='mt-2'>{design.description}</p>
+        </div>
+        <a
+          href={design.html_url}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='btn btn-primary'
+        >
+          View on GitHub
+          <img height='25' width='25' src='https://cdn.simpleicons.org/github/ffffff' />
+        </a>
+      </div>
+      <div className='flex items-center justify-between mt-6 mb-2'>
+        <h2 className='text-lg font-bold'>{design.name} schematic</h2>
         <a
           href={pdfUrl}
           target='_blank'
           rel='noopener noreferrer'
-          className='btn btn-primary'
+          className='btn btn-link'
         >
           Open in new tab
           <ExternalLink className='h-5 w-5' />
@@ -61,7 +142,44 @@ export default async function ({ params }) {
           title='PDF Viewer'
         />
       </div>
-
+      {bomData && bomData?.data?.length > 0 && (
+        <>
+          <div className='flex items-center justify-between mt-6'>
+            <h2 className='text-lg font-bold'>{design.name} bill of materials</h2>
+            <a
+              href={bomUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='btn btn-link'
+            >
+              Download BOM
+              <Download className='h-5 w-5' />
+            </a>
+          </div>
+          <div className='h-[40vh] overflow-auto w-full border rounded-sm mt-2'>
+            <BomView data={bomData.data} />
+          </div>
+        </>
+      )}
+      {svgs && svgs.length > 0 && (
+        <>
+          <div className='flex items-center justify-between mt-6'>
+            <h2 className='text-lg font-bold'>{design.name} board layout</h2>
+            <a
+              href={gerberUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='btn btn-link'
+            >
+              Download gerbers
+              <Download className='h-5 w-5' />
+            </a>
+          </div>
+          <div className='h-[60vh] w-full mt-2'>
+            <GerberViewer svgs={svgs} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

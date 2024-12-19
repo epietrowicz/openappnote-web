@@ -1,10 +1,10 @@
-import { User } from 'lucide-react'
-import Image from 'next/image'
+import DesignResults from '@/app/ui/design-results'
+import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
 
-async function fetchSearchResults (query) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}`)
+async function fetchSearchResults (query, page) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`)
   if (!res.ok) {
     throw new Error('Failed to fetch search results')
   }
@@ -12,50 +12,40 @@ async function fetchSearchResults (query) {
   return data.results
 }
 
-export default async function ({ params }) {
+export default async function ({ params, searchParams }) {
   const tag = (await params).tag
-  const results = await fetchSearchResults(tag)
+
+  const query = await searchParams
+  const pageNumber = query?.page == null
+    ? 1
+    : parseInt(query.page)
+
+  const results = await fetchSearchResults(tag, pageNumber)
+  const nextPageNumber = results?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
+  const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
+
   return (
     <>
       <div className='mx-auto text-center mt-6 max-w-lg'>
         <h1 className='text-4xl font-bold'>{tag}</h1>
         <h2>{tag} schematic references</h2>
       </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mx-auto px-16 mt-4'>
-        {results.hits.map(v => (
-          <DesignEntry key={v.id} entry={v} />
-        ))}
+      <div className='flex-1'>
+        <DesignResults designs={results.hits} />
+      </div>
+      <div className='flex items-center justify-center mt-12'>
+        <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>
+          <ArrowLeft className='h-5 w-5' />
+          Back
+        </Link>
+        <span>
+          {pageNumber}
+        </span>
+        <Link className='btn btn-link' href={`/?page=${nextPageNumber}`}>
+          Next
+          <ArrowRight className='h-5 w-5' />
+        </Link>
       </div>
     </>
-  )
-}
-
-function DesignEntry ({ entry }) {
-  return (
-    <Link
-      href={`/designs/${entry.slug}`}
-    >
-      <div className='h-56 w-full overflow-hidden bg-base-300 relative rounded-sm z-0'>
-        <Image
-          fill
-          alt={`Schematic thumbnail for ${entry.name} design`}
-          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/${entry.name}.png`}
-        />
-
-        <div
-          className={`absolute z-1 w-full h-full 
-                      bg-base-200 opacity-0 hover:opacity-100 
-                      bg-opacity-70 duration-300`}
-        >
-          <div className='flex w-full h-full items-end justify-start p-4'>
-            <span className='font-bold text-sm'>{entry.name}</span>
-          </div>
-        </div>
-      </div>
-      <div className='flex items-center space-x-2 pt-2'>
-        <User className='h-5 w-5' />
-        <p>{entry.owner}</p>
-      </div>
-    </Link>
   )
 }

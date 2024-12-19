@@ -9,15 +9,17 @@ export const metadata = {
 export default function RootLayout ({ children }) {
   return (
     <html lang='en' data-theme='lofi'>
-      <body>
+      <body className='flex flex-col min-h-screen'>
         <Navbar />
-        {children}
+        <div className='max-w-7xl flex flex-col flex-1 mx-auto w-full'>
+          {children}
+        </div>
+        <footer className='footer footer-center py-12'>
+          <aside>
+            <p>Open App Note</p>
+          </aside>
+        </footer>
       </body>
-      <footer className='footer footer-center p-6'>
-        <aside>
-          <p>Open App Note</p>
-        </aside>
-      </footer>
     </html>
   )
 }

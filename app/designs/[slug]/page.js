@@ -65,10 +65,10 @@ async function fetchCsvData (url) {
   return parsedData
 }
 
-async function getGerberSvgs (designFullName) {
+async function getGerberSvgs (url) {
   const params = {
     Bucket: bucketName,
-    Prefix: `repositories/${designFullName}/svgs`
+    Prefix: url
   }
 
   const command = new ListObjectsV2Command(params)
@@ -92,6 +92,7 @@ async function getGerberSvgs (designFullName) {
       }
     })
   )
+  console.log(fetchedSvgs)
   return fetchedSvgs
 }
 
@@ -102,8 +103,9 @@ export default async function ({ params }) {
   const pdfUrl = `${designUrl}.pdf`
   const gerberUrl = `${designUrl}_gerbers.zip`
   const bomUrl = `${designUrl}.csv`
+  const svgsPrefix = `repositories/${design.full_path}/${design.name}_svgs`
 
-  const svgs = await getGerberSvgs(design.full_path)
+  const svgs = await getGerberSvgs(svgsPrefix)
   const bomData = await fetchCsvData(bomUrl)
 
   return (
@@ -175,7 +177,7 @@ export default async function ({ params }) {
               <Download className='h-5 w-5' />
             </a>
           </div>
-          <div className='h-[60vh] w-full mt-2'>
+          <div className='h-[80vh] w-full mt-2'>
             <GerberViewer svgs={svgs} />
           </div>
         </>

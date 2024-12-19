@@ -3,10 +3,14 @@
 import Link from 'next/link'
 import React from 'react'
 import Search from './search'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 function Navbar () {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const pageNumber = searchParams?.get('page') == null
+    ? 1
+    : parseInt(searchParams.get('page'))
 
   return (
     <div className='navbar bg-base-100 space-x-2'>
@@ -16,7 +20,7 @@ function Navbar () {
       >
         Open App Note
       </Link>
-      {pathname !== '/' && (
+      {(pathname !== '/' || pageNumber > 1) && (
         <Search />
       )}
     </div>

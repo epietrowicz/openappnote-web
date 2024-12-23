@@ -1,17 +1,17 @@
 import { User } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 function DesignEntry ({ entry }) {
+  console.log(`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/top.png`)
   return (
     <Link
       href={`/designs/${entry.slug}`}
     >
       <div className='h-56 w-full overflow-hidden bg-base-300 relative rounded-sm z-0'>
-        <Image
-          fill
-          alt={`Schematic thumbnail for ${entry.name} design`}
-          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/${entry.name}.png`}
+        <img
+          className='h-52 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
+          alt={`Thumbnail for ${entry.name} design`}
+          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/top.png`}
         />
 
         <div
@@ -19,7 +19,7 @@ function DesignEntry ({ entry }) {
                         bg-base-200 opacity-0 hover:opacity-100 
                         bg-opacity-70 duration-300`}
         >
-          <div className='flex w-full h-full items-end justify-start p-4'>
+          <div className='flex w-full h-full items-end justify-start px-4 py-2'>
             <span className='font-bold text-sm'>{entry.name}</span>
           </div>
         </div>

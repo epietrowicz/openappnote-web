@@ -12,7 +12,7 @@ export default function BomView ({ data }) {
       <tbody>
         {data.map((r, i) => (
           <tr key={i}>
-            <th>{r?.Refs}</th>
+            <th>{r?.Reference}</th>
             <td>{r?.Value}</td>
             <td>{r?.Qty}</td>
             <td>{r?.Footprint}</td>

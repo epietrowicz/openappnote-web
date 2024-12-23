@@ -1,10 +1,8 @@
 import BomView from '@/app/ui/bom-view'
-import GerberViewer from '@/app/ui/gerber-viewer'
 import { supabaseService } from '@/lib/db'
-import { bucketName, s3Client } from '@/lib/s3'
 import { Download, ExternalLink } from 'lucide-react'
 import Papa from 'papaparse'
-const { ListObjectsV2Command } = require('@aws-sdk/client-s3')
+import BoardView from '@/app/ui/board-view'
 
 // Next.js will invalidate the cache when a
 // request comes in, at most once every 60 seconds.
@@ -65,47 +63,16 @@ async function fetchCsvData (url) {
   return parsedData
 }
 
-async function getGerberSvgs (url) {
-  const params = {
-    Bucket: bucketName,
-    Prefix: url
-  }
-
-  const command = new ListObjectsV2Command(params)
-  const data = await s3Client.send(command)
-  if (data.Contents == null) {
-    return
-  }
-
-  const files = data.Contents.filter(d => d.Key.includes('.svg'))
-  files.reverse()
-
-  const fetchedSvgs = await Promise.all(
-    files.map(async f => {
-      const url = `${process.env.DO_BUCKET_PATH}/${f.Key}`
-      const response = await fetch(url)
-      const content = await response.text()
-      return {
-        content,
-        hidden: false,
-        name: f.Key.split('/').pop()
-      }
-    })
-  )
-  console.log(fetchedSvgs)
-  return fetchedSvgs
-}
-
 export default async function ({ params }) {
   const slug = (await params).slug
   const design = await getDesignEntry(slug)
-  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${design.full_path}/${design.name}`
-  const pdfUrl = `${designUrl}.pdf`
-  const gerberUrl = `${designUrl}_gerbers.zip`
-  const bomUrl = `${designUrl}.csv`
-  const svgsPrefix = `repositories/${design.full_path}/${design.name}_svgs`
+  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${design.full_path}`
+  const pdfUrl = `${designUrl}/schematic.pdf`
+  const gerberUrl = `${designUrl}/gerbers.zip`
+  const bomUrl = `${designUrl}/bom.csv`
+  const topUrl = `${designUrl}/top.png`
+  const bottomUrl = `${designUrl}/bottom.png`
 
-  const svgs = await getGerberSvgs(svgsPrefix)
   const bomData = await fetchCsvData(bomUrl)
 
   return (
@@ -163,25 +130,21 @@ export default async function ({ params }) {
           </div>
         </>
       )}
-      {svgs && svgs.length > 0 && (
-        <>
-          <div className='flex items-center justify-between mt-6'>
-            <h2 className='text-lg font-bold'>{design.name} board layout</h2>
-            <a
-              href={gerberUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='btn btn-link'
-            >
-              Download gerbers
-              <Download className='h-5 w-5' />
-            </a>
-          </div>
-          <div className='h-[80vh] w-full mt-2'>
-            <GerberViewer svgs={svgs} />
-          </div>
-        </>
-      )}
+      <div className='flex items-center justify-between mt-6'>
+        <h2 className='text-lg font-bold'>{design.name} board layout</h2>
+        <a
+          href={gerberUrl}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='btn btn-link'
+        >
+          Download gerbers
+          <Download className='h-5 w-5' />
+        </a>
+      </div>
+      <div className='h-[80vh] w-full mt-2'>
+        <BoardView topUrl={topUrl} bottomUrl={bottomUrl} />
+      </div>
     </div>
   )
 }

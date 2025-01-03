@@ -1,8 +1,7 @@
-import { User } from 'lucide-react'
+import { Star, UserCircle } from 'lucide-react'
 import Link from 'next/link'
 
-function DesignEntry ({ entry }) {
-  console.log(`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/top.png`)
+async function DesignEntry ({ entry }) {
   return (
     <Link
       href={`/designs/${entry.slug}`}
@@ -24,15 +23,28 @@ function DesignEntry ({ entry }) {
           </div>
         </div>
       </div>
-      <div className='flex items-center space-x-2 pt-2'>
-        <User className='h-5 w-5' />
-        <p>{entry.owner}</p>
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center space-x-2 pt-2'>
+          <UserCircle className='h-5 w-5' />
+          <p className='text-sm'>{entry.owner}</p>
+        </div>
+        <div className='flex items-center space-x-1 pt-2'>
+          <Star className='h-4 w-4 fill-neutral stroke-neutral' />
+          <p className='text-sm'>{entry.stars}</p>
+        </div>
       </div>
     </Link>
   )
 }
 
 export default function DesignResults ({ designs }) {
+  if (designs.length === 0) {
+    return (
+      <div className='text-left mt-8'>
+        <h2>No designs found</h2>
+      </div>
+    )
+  }
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mx-auto px-16 mt-4'>
       {designs.map(v => (

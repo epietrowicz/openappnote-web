@@ -4,6 +4,20 @@ import DesignResults from './ui/design-results'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
+import { octokit } from '@/lib/gh'
+
+async function getRepositoryInfo (design) {
+  const owner = design.full_path.split('/')[0]
+  const repo = design.full_path.split('/')[1]
+  const result = await octokit.rest.repos.get({
+    owner,
+    repo
+  })
+  return {
+    ...design,
+    stars: result.data.stargazers_count
+  }
+}
 
 async function getDesigns (pageNum) {
   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
@@ -17,7 +31,9 @@ async function getDesigns (pageNum) {
   if (error) {
     console.log(error)
   }
-  return data
+  const promises = data.map(design => getRepositoryInfo(design))
+  const results = await Promise.all(promises)
+  return results
 }
 
 export default async function Home ({ searchParams }) {

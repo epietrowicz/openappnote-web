@@ -28,10 +28,10 @@ export default async function ({ params, searchParams }) {
     <>
       <div className='mx-auto text-center mt-6 max-w-lg'>
         <h1 className='text-4xl font-bold'>{tag}</h1>
-        <h2>{tag} schematic references</h2>
+        <h2>{tag} electronic design references</h2>
       </div>
       <div className='flex-1'>
-        <DesignResults designs={results.hits} />
+        <DesignResults designs={results} />
       </div>
       <div className='flex items-center justify-center mt-12'>
         <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>

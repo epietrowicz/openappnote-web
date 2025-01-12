@@ -1,6 +1,7 @@
 import './globals.css'
 import Navbar from './ui/navbar'
 import { Suspense } from 'react'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
   title: 'Create Next App',
@@ -22,6 +23,7 @@ export default function RootLayout ({ children }) {
             <p>Open App Note</p>
           </aside>
         </footer>
+        <Analytics />
       </body>
     </html>
   )

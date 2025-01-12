@@ -25,6 +25,15 @@ export async function generateStaticParams () {
   return designData
 }
 
+export async function generateMetadata ({ params }) {
+  const slug = (await params).slug
+  const design = await getDesignEntry(slug)
+
+  return {
+    title: design.repo_description
+  }
+}
+
 async function getDesignEntry (slug) {
   const { data: designData, error: designError } = await supabaseService
     .from('design')

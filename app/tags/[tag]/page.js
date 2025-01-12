@@ -3,6 +3,16 @@ import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
+export async function generateMetadata ({ params, searchParams }, parent) {
+  console.log(await params)
+  const tag = (await params).tag
+  // const slug = (await params).slug
+
+  return {
+    title: `Reference electronics designs for ${tag}`
+  }
+}
+
 async function fetchSearchResults (query, page) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`)
   if (!res.ok) {
@@ -28,7 +38,7 @@ export default async function ({ params, searchParams }) {
     <>
       <div className='mx-auto text-center mt-6 max-w-lg'>
         <h1 className='text-4xl font-bold'>{tag}</h1>
-        <h2>{tag} electronic design references</h2>
+        <h2>Example electronics designs for {tag}</h2>
       </div>
       <div className='flex-1'>
         <DesignResults designs={results} />

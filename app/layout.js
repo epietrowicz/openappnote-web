@@ -1,5 +1,6 @@
 import './globals.css'
 import Navbar from './ui/navbar'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: 'Create Next App',
@@ -10,11 +11,13 @@ export default function RootLayout ({ children }) {
   return (
     <html lang='en' data-theme='lofi'>
       <body className='flex flex-col min-h-screen'>
-        <Navbar />
+        <Suspense>
+          <Navbar />
+        </Suspense>
         <div className='max-w-7xl flex flex-col flex-1 mx-auto w-full'>
           {children}
         </div>
-        <footer className='footer footer-center py-12'>
+        <footer className='footer footer-center py-4'>
           <aside>
             <p>Open App Note</p>
           </aside>

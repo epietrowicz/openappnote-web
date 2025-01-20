@@ -79,8 +79,7 @@ export default async function ({ params }) {
   const pdfUrl = `${designUrl}/schematic.pdf`
   const gerberUrl = `${designUrl}/gerbers.zip`
   const bomUrl = `${designUrl}/bom.csv`
-  const topUrl = `${designUrl}/top.png`
-  const bottomUrl = `${designUrl}/bottom.png`
+  const iBomUrl = `${designUrl}/ibom.html`
 
   const bomData = await fetchCsvData(bomUrl)
 
@@ -120,39 +119,40 @@ export default async function ({ params }) {
           title='PDF Viewer'
         />
       </div>
-      {bomData && bomData?.data?.length > 0 && (
-        <>
-          <div className='flex items-center justify-between mt-6'>
-            <h2 className='text-lg font-bold'>{design.name} bill of materials</h2>
-            <a
-              href={bomUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='btn btn-link'
-            >
-              Download BOM
-              <Download className='h-5 w-5' />
-            </a>
-          </div>
-          <div className='h-[40vh] overflow-auto w-full border rounded-sm mt-2'>
-            <BomView data={bomData.data} />
-          </div>
-        </>
-      )}
       <div className='flex items-center justify-between mt-6'>
         <h2 className='text-lg font-bold'>{design.name} board layout</h2>
-        <a
-          href={gerberUrl}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='btn btn-link'
-        >
-          Download gerbers
-          <Download className='h-5 w-5' />
-        </a>
+        <div>
+          <a
+            href={gerberUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='btn btn-link'
+          >
+            Download gerbers
+            <Download className='h-5 w-5' />
+          </a>
+          <a
+            href={bomUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='btn btn-link'
+          >
+            Download BOM
+            <Download className='h-5 w-5' />
+          </a>
+          <a
+            href={iBomUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='btn btn-link'
+          >
+            Open in new tab
+            <ExternalLink className='h-5 w-5' />
+          </a>
+        </div>
       </div>
-      <div className='h-[80vh] w-full mt-2'>
-        <BoardView topUrl={topUrl} bottomUrl={bottomUrl} />
+      <div className='h-[90vh] w-full mt-2'>
+        <BoardView iBomUrl={iBomUrl} />
       </div>
     </div>
   )

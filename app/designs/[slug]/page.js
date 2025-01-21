@@ -1,7 +1,5 @@
-import BomView from '@/app/ui/bom-view'
 import { supabaseService } from '@/lib/db'
 import { Download, ExternalLink } from 'lucide-react'
-import Papa from 'papaparse'
 import BoardView from '@/app/ui/board-view'
 
 // Next.js will invalidate the cache when a
@@ -61,16 +59,16 @@ async function getDesignEntry (slug) {
   return designData
 }
 
-async function fetchCsvData (url) {
-  const response = await fetch(url)
+// async function fetchCsvData (url) {
+//   const response = await fetch(url)
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-  const text = await response.text()
-  const parsedData = Papa.parse(text, { header: true })
-  return parsedData
-}
+//   if (!response.ok) {
+//     throw new Error(`HTTP error! status: ${response.status}`)
+//   }
+//   const text = await response.text()
+//   const parsedData = Papa.parse(text, { header: true })
+//   return parsedData
+// }
 
 export default async function ({ params }) {
   const slug = (await params).slug
@@ -80,8 +78,6 @@ export default async function ({ params }) {
   const gerberUrl = `${designUrl}/gerbers.zip`
   const bomUrl = `${designUrl}/bom.csv`
   const iBomUrl = `${designUrl}/ibom.html`
-
-  const bomData = await fetchCsvData(bomUrl)
 
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>
@@ -112,7 +108,7 @@ export default async function ({ params }) {
           <ExternalLink className='h-5 w-5' />
         </a>
       </div>
-      <div className='h-[80vh] rounded-sm'>
+      <div className='h-[80vh] rounded-xs'>
         <iframe
           src={pdfUrl}
           className='w-full h-full'

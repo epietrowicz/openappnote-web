@@ -5,6 +5,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'openappnote-bucket.nyc3.digitaloceanspaces.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com'
       }
     ]
   }

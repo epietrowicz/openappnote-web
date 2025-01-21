@@ -1,21 +1,7 @@
-import { octokit } from '@/lib/gh'
+import { getRepositoryInfo } from '@/lib/gh'
 import { meilisearchClient } from '@/lib/meilisearch'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { NextResponse } from 'next/server'
-
-async function getRepositoryInfo (design) {
-  console.log(design)
-  const owner = design.full_path.split('/')[0]
-  const repo = design.full_path.split('/')[1]
-  const result = await octokit.rest.repos.get({
-    owner,
-    repo
-  })
-  return {
-    ...design,
-    stars: result.data.stargazers_count
-  }
-}
 
 export async function GET (request) {
   const { searchParams } = new URL(request.url)

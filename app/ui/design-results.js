@@ -1,8 +1,24 @@
+import { supabaseService } from '@/lib/db'
+import { NUM_PARTS_TO_TAG } from '@/lib/util'
 import { Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import PartTags from './part-tags'
+
+async function getParts (designId) {
+  const { data: partsData, error: partsError } = await supabaseService
+    .from('design_part')
+    .select('part(*)')
+    .eq('design_id', designId)
+
+  if (partsError) {
+    console.log(partsError)
+  }
+  return partsData.map(({ part }) => part).slice(0, 3)
+}
 
 async function DesignEntry ({ entry }) {
+  const parts = await getParts(entry.id)
   return (
     <Link
       href={`/designs/${entry.slug}`}
@@ -24,6 +40,9 @@ async function DesignEntry ({ entry }) {
         <p>
           {entry.repo_description}
         </p>
+        <div>
+          <PartTags parts={parts} />
+        </div>
 
         {/* <div className='card-actions'>
           <div className='badge badge-primary badge-sm'>Fashion</div>

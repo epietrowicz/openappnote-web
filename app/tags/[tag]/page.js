@@ -3,11 +3,8 @@ import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
-export async function generateMetadata ({ params, searchParams }, parent) {
-  console.log(await params)
+export async function generateMetadata ({ params }) {
   const tag = (await params).tag
-  // const slug = (await params).slug
-
   return {
     title: `Reference electronics designs for ${tag}`
   }

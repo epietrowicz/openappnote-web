@@ -1,6 +1,9 @@
 import { supabaseService } from '@/lib/db'
 import { Download, ExternalLink } from 'lucide-react'
 import BoardView from '@/app/ui/board-view'
+import Link from 'next/link'
+import { NUM_PARTS_TO_TAG } from '@/lib/util'
+import PartTags from '@/app/ui/part-tags'
 
 // Next.js will invalidate the cache when a
 // request comes in, at most once every 60 seconds.
@@ -35,9 +38,11 @@ export async function generateMetadata ({ params }) {
 async function getDesignEntry (slug) {
   const { data: designData, error: designError } = await supabaseService
     .from('design')
-    .select('*')
+    .select('*, design_part(part(*))')
     .eq('slug', slug)
     .single()
+
+  console.log(designData)
 
   if (designError) {
     console.log(designError)
@@ -79,6 +84,8 @@ export default async function ({ params }) {
   const bomUrl = `${designUrl}/bom.csv`
   const iBomUrl = `${designUrl}/ibom.html`
 
+  const parts = design.design_part.map(({ part }) => part).slice(0, NUM_PARTS_TO_TAG)
+
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>
       <div className='flex items-start justify-between mt-6'>
@@ -96,6 +103,11 @@ export default async function ({ params }) {
           <img height='25' width='25' src='https://cdn.simpleicons.org/github/ffffff' />
         </a>
       </div>
+
+      <div className='mt-4'>
+        <PartTags parts={parts} />
+      </div>
+
       <div className='flex items-center justify-between mt-6 mb-2'>
         <h2 className='text-lg font-bold'>{design.name} schematic</h2>
         <a

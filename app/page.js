@@ -8,24 +8,44 @@ import { getRepositoryInfo } from '@/lib/gh'
 
 async function getDesigns (pageNum) {
   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
-  const endingOffset = startingOffset + (NUM_RESULTS_PER_PAGE - 1)
+  const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
 
   const { data, error } = await supabaseService
-    .from('repository')
-    .select('id, design(*)')
-    .eq('did_process', true)
+    .from('design')
+    .select('*, repository(id, stars)')
+    .order('repository(stars)', { ascending: false })
+    .eq('repository.did_process', true)
     .range(startingOffset, endingOffset)
 
   if (error) {
     console.log(error)
+    return []
   }
-  let designs = data.filter(repo => repo.design.length > 0)
-  designs = designs.flatMap(repo => repo.design)
-
-  const promises = designs.map(design => getRepositoryInfo(design))
-  const results = await Promise.all(promises)
+  const results = await Promise.all(data.map(design => getRepositoryInfo(design)))
   return results
 }
+
+// async function getDesigns (pageNum) {
+//   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
+//   const endingOffset = startingOffset + (NUM_RESULTS_PER_PAGE - 1)
+
+//   const { data, error } = await supabaseService
+//     .from('repository')
+//     .select('id, design(*)')
+//     .eq('did_process', true)
+//     .order('stars', { ascending: false })
+//     .range(startingOffset, endingOffset)
+
+//   if (error) {
+//     console.log(error)
+//   }
+//   let designs = data.filter(repo => repo.design.length > 0)
+//   designs = designs.flatMap(repo => repo.design)
+
+//   const promises = designs.map(design => getRepositoryInfo(design))
+//   const results = await Promise.all(promises)
+//   return results
+// }
 
 export default async function Home ({ searchParams }) {
   const query = await searchParams
@@ -34,6 +54,7 @@ export default async function Home ({ searchParams }) {
     : parseInt(query.page)
 
   const designs = await getDesigns(pageNumber)
+  console.log(designs)
   const nextPageNumber = designs?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
 
@@ -59,17 +80,31 @@ export default async function Home ({ searchParams }) {
         <DesignResults designs={designs} />
       </div>
       <div className='flex items-center justify-center mt-12'>
-        <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>
-          <ArrowLeft className='h-5 w-5' />
-          Back
-        </Link>
+        {pageNumber === prevPageNumber
+          ? (
+            <div className='btn btn-link' disabled>
+              <ArrowLeft className='h-5 w-5' />
+              Back
+            </div>)
+          : (
+            <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>
+              <ArrowLeft className='h-5 w-5' />
+              Back
+            </Link>)}
         <span>
           {pageNumber}
         </span>
-        <Link className='btn btn-link' href={`/?page=${nextPageNumber}`}>
-          Next
-          <ArrowRight className='h-5 w-5' />
-        </Link>
+        {pageNumber === nextPageNumber
+          ? (
+            <div className='btn btn-link' disabled>
+              Next
+              <ArrowRight className='h-5 w-5' />
+            </div>)
+          : (
+            <Link className='btn btn-link' href={`/?page=${nextPageNumber}`}>
+              Next
+              <ArrowRight className='h-5 w-5' />
+            </Link>)}
       </div>
     </>
   )

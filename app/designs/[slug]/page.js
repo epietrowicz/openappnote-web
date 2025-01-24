@@ -30,7 +30,11 @@ export async function generateMetadata ({ params }) {
   const design = await getDesignEntry(slug)
 
   return {
-    title: design.repo_description ?? `${design.name} reference design`
+    title: design?.repo_description == null
+      ? `${design.name} reference design`
+      : design.repo_description.length > 50
+        ? design.repo_description.substring(0, 50)
+        : design.repo_description
   }
 }
 

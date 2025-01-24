@@ -1,20 +1,20 @@
 import { supabaseService } from '@/lib/db'
-import { NUM_PARTS_TO_TAG } from '@/lib/util'
-import { Star } from 'lucide-react'
+import { sortParts } from '@/lib/util'
+import { Star, UserCircleIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import PartTags from './part-tags'
 
 async function getParts (designId) {
   const { data: partsData, error: partsError } = await supabaseService
     .from('design_part')
-    .select('part(*)')
+    .select('reference_designator, part(*)')
     .eq('design_id', designId)
 
   if (partsError) {
     console.log(partsError)
   }
-  return partsData.map(({ part }) => part).slice(0, 3)
+  const parts = sortParts(partsData)
+  return parts.map(({ part }) => part).slice(0, 3)
 }
 
 async function DesignEntry ({ entry }) {
@@ -24,9 +24,8 @@ async function DesignEntry ({ entry }) {
       href={`/designs/${entry.slug}`}
       className='card bg-base-100 w-full shadow-sm'
     >
-      <figure className='bg-base-300'>
+      <figure className='bg-base-300 h-[250px] flex items-center justify-center'>
         <Image
-          className='p-2'
           alt={`Thumbnail for ${entry.name} design`}
           src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/cover.png`}
           width={300}
@@ -40,24 +39,29 @@ async function DesignEntry ({ entry }) {
         <p>
           {entry.repo_description}
         </p>
-        <div>
-          <PartTags parts={parts} />
-        </div>
 
-        {/* <div className='card-actions'>
-          <div className='badge badge-primary badge-sm'>Fashion</div>
-          <div className='badge badge-primary badge-sm'>Products</div>
-        </div> */}
+        <div className='flex items-center space-x-2'>
+          {parts.map(part => (
+            <div key={part.id} className='badge badge-soft badge-primary badge-sm'>
+              <h4>{part.part_number.length > 5
+                ? part.part_number.slice(0, 10)
+                : part.part_number}
+              </h4>
+            </div>
+          ))}
+        </div>
 
         <div className='flex items-center justify-start space-x-4 mt-2'>
           <div className='flex items-center space-x-2'>
-            <Image
-              className='rounded-full'
-              alt={`Avatar for ${entry.owner}`}
-              src={entry.avatar_url}
-              width={22}
-              height={22}
-            />
+            {entry?.avatar_url == null
+              ? (<UserCircleIcon className='h-5 w-5' />)
+              : (<Image
+                  className='rounded-full'
+                  alt={`Avatar for ${entry.owner}`}
+                  src={entry.avatar_url}
+                  width={20}
+                  height={20}
+                 />)}
             <p className='text-sm'>{entry.owner}</p>
           </div>
           <div className='flex items-center space-x-1'>

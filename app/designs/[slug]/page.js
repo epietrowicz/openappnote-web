@@ -1,8 +1,7 @@
 import { supabaseService } from '@/lib/db'
 import { Download, ExternalLink } from 'lucide-react'
 import BoardView from '@/app/ui/board-view'
-import Link from 'next/link'
-import { NUM_PARTS_TO_TAG } from '@/lib/util'
+import { NUM_PARTS_TO_TAG, sortParts } from '@/lib/util'
 import PartTags from '@/app/ui/part-tags'
 
 // Next.js will invalidate the cache when a
@@ -31,18 +30,16 @@ export async function generateMetadata ({ params }) {
   const design = await getDesignEntry(slug)
 
   return {
-    title: design.repo_description
+    title: design.repo_description ?? `${design.name} reference design`
   }
 }
 
 async function getDesignEntry (slug) {
   const { data: designData, error: designError } = await supabaseService
     .from('design')
-    .select('*, design_part(part(*))')
+    .select('*, design_part(reference_designator, part(*))')
     .eq('slug', slug)
     .single()
-
-  console.log(designData)
 
   if (designError) {
     console.log(designError)
@@ -84,7 +81,8 @@ export default async function ({ params }) {
   const bomUrl = `${designUrl}/bom.csv`
   const iBomUrl = `${designUrl}/ibom.html`
 
-  const parts = design.design_part.map(({ part }) => part).slice(0, NUM_PARTS_TO_TAG)
+  const sortedDesign = sortParts(design.design_part)
+  const parts = sortedDesign.map(({ part }) => part).slice(0, NUM_PARTS_TO_TAG)
 
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>

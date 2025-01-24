@@ -14,11 +14,13 @@ export async function GET (request) {
 
   const offset = (page - 1) * NUM_RESULTS_PER_PAGE
   const index = meilisearchClient.index('design')
-  const { hits } = await index.search(query, {
+
+  const searchResult = await index.search(query, {
     limit: NUM_RESULTS_PER_PAGE,
-    offset
+    offset,
+    matchingStrategy: 'all'
   })
-  const promises = hits.map(design => getRepositoryInfo(design))
+  const promises = searchResult.hits.map(design => getRepositoryInfo(design))
   const results = await Promise.all(promises)
 
   return NextResponse.json({ results })

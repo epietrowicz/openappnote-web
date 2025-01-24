@@ -11,14 +11,18 @@ async function getDesigns (pageNum) {
   const endingOffset = startingOffset + (NUM_RESULTS_PER_PAGE - 1)
 
   const { data, error } = await supabaseService
-    .from('design')
-    .select('*')
+    .from('repository')
+    .select('id, design(*)')
+    .eq('did_process', true)
     .range(startingOffset, endingOffset)
 
   if (error) {
     console.log(error)
   }
-  const promises = data.map(design => getRepositoryInfo(design))
+  let designs = data.filter(repo => repo.design.length > 0)
+  designs = designs.flatMap(repo => repo.design)
+
+  const promises = designs.map(design => getRepositoryInfo(design))
   const results = await Promise.all(promises)
   return results
 }

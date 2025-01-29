@@ -13,6 +13,7 @@ export const revalidate = 60
 // Next.js will server-render the page on-demand.
 export const dynamicParams = true // or false, to 404 on unknown paths
 
+// Good resource: https://supabase.com/blog/fetching-and-caching-supabase-data-in-next-js-server-components
 export async function generateStaticParams () {
   const { data: designData, error: designError } = await supabaseService
     .from('design')
@@ -79,7 +80,7 @@ async function getDesignEntry (slug) {
 export default async function ({ params }) {
   const slug = (await params).slug
   const design = await getDesignEntry(slug)
-  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${design.full_path}`
+  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${encodeURIComponent(design.full_path)}`
   const pdfUrl = `${designUrl}/schematic.pdf`
   const gerberUrl = `${designUrl}/gerbers.zip`
   const bomUrl = `${designUrl}/bom.csv`

@@ -27,7 +27,7 @@ async function DesignEntry ({ entry }) {
       <figure className='bg-base-300 h-[250px] flex items-center justify-center'>
         <Image
           alt={`Thumbnail for ${entry.name} design`}
-          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${entry.full_path}/cover.png`}
+          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${encodeURIComponent(entry.full_path)}/cover.png`}
           width={300}
           height={300}
         />

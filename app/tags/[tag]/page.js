@@ -35,7 +35,7 @@ export default async function ({ params, searchParams }) {
     <>
       <div className='mx-auto text-center mt-6 max-w-lg'>
         <h1 className='text-4xl font-bold'>{tag}</h1>
-        <h2>Your search for "{tag}"</h2>
+        <h2>{totalHits} results for "{tag}"</h2>
       </div>
       <div className='flex-1'>
         <DesignResults designs={results} />

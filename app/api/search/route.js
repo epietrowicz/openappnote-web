@@ -25,6 +25,7 @@ export async function GET (request) {
     const { data, error } = await supabaseService
       .from('design')
       .select('*, repository(id, stars, avatar_url)')
+      .order('repository(stars)', { ascending: false })
       .eq('id', design.id)
       .single()
 
@@ -35,6 +36,6 @@ export async function GET (request) {
     return data
   })
   const results = await Promise.all(promises)
-
-  return NextResponse.json({ results, totalHits: searchResult.estimatedTotalHits })
+  const orderedResults = results.sort((a, b) => b.repository.stars - a.repository.stars)
+  return NextResponse.json({ results: orderedResults, totalHits: searchResult.estimatedTotalHits })
 }

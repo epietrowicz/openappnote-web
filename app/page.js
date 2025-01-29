@@ -20,32 +20,8 @@ async function getDesigns (pageNum) {
     console.log(error)
     return []
   }
-  return data
-  // const results = await Promise.all(data.map(design => getRepositoryInfo(design)))
-  // return results
+  return data.filter(design => design.repository != null)
 }
-
-// async function getDesigns (pageNum) {
-//   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
-//   const endingOffset = startingOffset + (NUM_RESULTS_PER_PAGE - 1)
-
-//   const { data, error } = await supabaseService
-//     .from('repository')
-//     .select('id, design(*)')
-//     .eq('did_process', true)
-//     .order('stars', { ascending: false })
-//     .range(startingOffset, endingOffset)
-
-//   if (error) {
-//     console.log(error)
-//   }
-//   let designs = data.filter(repo => repo.design.length > 0)
-//   designs = designs.flatMap(repo => repo.design)
-
-//   const promises = designs.map(design => getRepositoryInfo(design))
-//   const results = await Promise.all(promises)
-//   return results
-// }
 
 export default async function Home ({ searchParams }) {
   const query = await searchParams

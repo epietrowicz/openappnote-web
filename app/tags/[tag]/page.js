@@ -16,7 +16,7 @@ async function fetchSearchResults (query, page) {
     throw new Error('Failed to fetch search results')
   }
   const data = await res.json()
-  return data.results
+  return data
 }
 
 export default async function ({ params, searchParams }) {
@@ -27,7 +27,7 @@ export default async function ({ params, searchParams }) {
     ? 1
     : parseInt(query.page)
 
-  const results = await fetchSearchResults(tag, pageNumber)
+  const { results, totalHits } = await fetchSearchResults(tag, pageNumber)
   const nextPageNumber = results?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
 
@@ -35,20 +35,20 @@ export default async function ({ params, searchParams }) {
     <>
       <div className='mx-auto text-center mt-6 max-w-lg'>
         <h1 className='text-4xl font-bold'>{tag}</h1>
-        <h2>Example electronics designs for {tag}</h2>
+        <h2>Your search for "{tag}"</h2>
       </div>
       <div className='flex-1'>
         <DesignResults designs={results} />
       </div>
       <div className='flex items-center justify-center mt-12'>
-        <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>
+        <Link className='btn btn-link' href={`/tags/${tag}?page=${prevPageNumber}`}>
           <ArrowLeft className='h-5 w-5' />
           Back
         </Link>
         <span>
           {pageNumber}
         </span>
-        <Link className='btn btn-link' href={`/?page=${nextPageNumber}`}>
+        <Link className='btn btn-link' href={`/tags/${tag}?page=${nextPageNumber}`}>
           Next
           <ArrowRight className='h-5 w-5' />
         </Link>

@@ -69,7 +69,6 @@ async function DesignEntry ({ entry }) {
           </div>
         </div>
       </div>
-
     </Link>
   )
 }

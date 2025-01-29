@@ -36,5 +36,5 @@ export async function GET (request) {
   })
   const results = await Promise.all(promises)
 
-  return NextResponse.json({ results })
+  return NextResponse.json({ results, totalHits: searchResult.estimatedTotalHits })
 }

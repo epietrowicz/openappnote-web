@@ -4,7 +4,6 @@ import DesignResults from './ui/design-results'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
-import { getRepositoryInfo } from '@/lib/gh'
 
 async function getDesigns (pageNum) {
   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
@@ -12,7 +11,7 @@ async function getDesigns (pageNum) {
 
   const { data, error } = await supabaseService
     .from('design')
-    .select('*, repository(id, stars)')
+    .select('*, repository(id, stars, avatar_url)')
     .order('repository(stars)', { ascending: false })
     .eq('repository.did_process', true)
     .range(startingOffset, endingOffset)
@@ -21,8 +20,9 @@ async function getDesigns (pageNum) {
     console.log(error)
     return []
   }
-  const results = await Promise.all(data.map(design => getRepositoryInfo(design)))
-  return results
+  return data
+  // const results = await Promise.all(data.map(design => getRepositoryInfo(design)))
+  // return results
 }
 
 // async function getDesigns (pageNum) {
@@ -54,7 +54,6 @@ export default async function Home ({ searchParams }) {
     : parseInt(query.page)
 
   const designs = await getDesigns(pageNumber)
-  console.log(designs)
   const nextPageNumber = designs?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
 

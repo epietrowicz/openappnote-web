@@ -1,4 +1,4 @@
-import { getRepositoryInfo } from '@/lib/gh'
+import { supabaseService } from '@/lib/db'
 import { meilisearchClient } from '@/lib/meilisearch'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { NextResponse } from 'next/server'
@@ -20,7 +20,20 @@ export async function GET (request) {
     offset,
     matchingStrategy: 'all'
   })
-  const promises = searchResult.hits.map(design => getRepositoryInfo(design))
+
+  const promises = searchResult.hits.map(async (design) => {
+    const { data, error } = await supabaseService
+      .from('design')
+      .select('*, repository(id, stars, avatar_url)')
+      .eq('id', design.id)
+      .single()
+
+    if (error) {
+      console.log(error)
+      return {}
+    }
+    return data
+  })
   const results = await Promise.all(promises)
 
   return NextResponse.json({ results })

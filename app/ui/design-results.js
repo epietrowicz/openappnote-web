@@ -40,12 +40,11 @@ async function DesignEntry ({ entry }) {
           {entry.repo_description}
         </p>
 
-        <div className='flex items-center space-x-2'>
+        <div className='flex items-start justify-start space-x-2 flex-wrap'>
           {parts.map(part => (
-            <div key={part.id} className='badge badge-soft badge-primary badge-sm'>
-              <h4>{part.part_number.length > 5
-                ? part.part_number.slice(0, 10)
-                : part.part_number}
+            <div key={part.id} className='badge badge-soft badge-primary badge-sm flex-none mt-2'>
+              <h4 className='flex-none'>
+                {part.part_number}
               </h4>
             </div>
           ))}
@@ -53,12 +52,12 @@ async function DesignEntry ({ entry }) {
 
         <div className='flex items-center justify-start space-x-4 mt-2'>
           <div className='flex items-center space-x-2'>
-            {entry?.avatar_url == null
+            {entry?.repository?.avatar_url == null
               ? (<UserCircleIcon className='h-5 w-5' />)
               : (<Image
                   className='rounded-full'
                   alt={`Avatar for ${entry.owner}`}
-                  src={entry.avatar_url}
+                  src={entry.repository.avatar_url}
                   width={20}
                   height={20}
                  />)}
@@ -66,7 +65,7 @@ async function DesignEntry ({ entry }) {
           </div>
           <div className='flex items-center space-x-1'>
             <Star className='h-4 w-4 ' />
-            <p className='text-sm'>{entry.stars}</p>
+            <p className='text-sm'>{entry?.repository?.stars ?? 0}</p>
           </div>
         </div>
       </div>

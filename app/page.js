@@ -11,16 +11,16 @@ async function getDesigns (pageNum) {
 
   const { data, error } = await supabaseService
     .from('design')
-    .select('*, repository(id, stars, avatar_url)')
-    .order('repository(stars)', { ascending: false })
+    .select('*, repository!inner(id, stars, avatar_url, did_process)')
     .eq('repository.did_process', true)
+    .order('repository(stars)', { ascending: false })
     .range(startingOffset, endingOffset)
 
   if (error) {
     console.log(error)
     return []
   }
-  return data.filter(design => design.repository != null)
+  return data
 }
 
 export default async function Home ({ searchParams }) {

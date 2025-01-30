@@ -1,8 +1,9 @@
 import { supabaseService } from '@/lib/db'
 import { sortParts } from '@/lib/util'
-import { Star, UserCircleIcon } from 'lucide-react'
+import { Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { GhAvatar } from './gh-avatar'
 
 async function getParts (designId) {
   const { data: partsData, error: partsError } = await supabaseService
@@ -19,6 +20,8 @@ async function getParts (designId) {
 
 async function DesignEntry ({ entry }) {
   const parts = await getParts(entry.id)
+  const designName = entry.name.replaceAll('-', ' ').replaceAll('_', ' ')
+
   return (
     <Link
       href={`/designs/${entry.slug}`}
@@ -26,7 +29,7 @@ async function DesignEntry ({ entry }) {
     >
       <figure className='bg-base-300 h-[250px] flex items-center justify-center'>
         <Image
-          alt={`Thumbnail for ${entry.name} design`}
+          alt={`Thumbnail for ${designName} design`}
           src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${encodeURIComponent(entry.full_path)}/cover.png`}
           width={300}
           height={300}
@@ -34,7 +37,7 @@ async function DesignEntry ({ entry }) {
       </figure>
       <div className='card-body'>
         <h2 className='card-title'>
-          {entry.name}
+          {designName}
         </h2>
         <p>
           {entry.repo_description}
@@ -52,15 +55,7 @@ async function DesignEntry ({ entry }) {
 
         <div className='flex items-center justify-start space-x-4 mt-2'>
           <div className='flex items-center space-x-2'>
-            {entry?.repository?.avatar_url == null
-              ? (<UserCircleIcon className='h-5 w-5' />)
-              : (<Image
-                  className='rounded-full'
-                  alt={`Avatar for ${entry.owner}`}
-                  src={entry.repository.avatar_url}
-                  width={20}
-                  height={20}
-                 />)}
+            <GhAvatar design={entry} />
             <p className='text-sm'>{entry.owner}</p>
           </div>
           <div className='flex items-center space-x-1'>

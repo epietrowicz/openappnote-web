@@ -3,6 +3,7 @@ import { Download, ExternalLink } from 'lucide-react'
 import BoardView from '@/app/ui/board-view'
 import { NUM_PARTS_TO_TAG, sortParts } from '@/lib/util'
 import PartTags from '@/app/ui/part-tags'
+import { GhAvatar } from '@/app/ui/gh-avatar'
 
 // Next.js will invalidate the cache when a
 // request comes in, at most once every 60 seconds.
@@ -33,9 +34,7 @@ export async function generateMetadata ({ params }) {
   return {
     title: design?.repo_description == null
       ? `${design.name} reference design`
-      : design.repo_description.length > 50
-        ? design.repo_description.substring(0, 50)
-        : design.repo_description
+      : design.repo_description
   }
 }
 
@@ -53,7 +52,7 @@ async function getDesignEntry (slug) {
 
   const { data: repoData, error: repoError } = await supabaseService
     .from('repository')
-    .select('description, html_url')
+    .select('description, html_url, avatar_url')
     .eq('id', designData.repository_id)
     .single()
 
@@ -63,19 +62,10 @@ async function getDesignEntry (slug) {
   }
   designData.description = repoData.description
   designData.html_url = repoData.html_url
+  designData.repository = {}
+  designData.repository.avatar_url = repoData.avatar_url
   return designData
 }
-
-// async function fetchCsvData (url) {
-//   const response = await fetch(url)
-
-//   if (!response.ok) {
-//     throw new Error(`HTTP error! status: ${response.status}`)
-//   }
-//   const text = await response.text()
-//   const parsedData = Papa.parse(text, { header: true })
-//   return parsedData
-// }
 
 export default async function ({ params }) {
   const slug = (await params).slug
@@ -88,12 +78,19 @@ export default async function ({ params }) {
 
   const sortedDesign = sortParts(design.design_part)
   const parts = sortedDesign.map(({ part }) => part).slice(0, NUM_PARTS_TO_TAG)
+  const designName = design.name.replaceAll('-', ' ').replaceAll('_', ' ')
 
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>
       <div className='flex items-start justify-between mt-6'>
         <div>
-          <h1 className='text-3xl font-bold'>{design.name}</h1>
+          <div className='flex items-center space-x-2'>
+            <GhAvatar design={design} height={37} width={37} />
+            <div>
+              <h1 className='text-3xl font-bold'>{designName}</h1>
+              <p className='text-sm'>{design.owner}</p>
+            </div>
+          </div>
           <p className='mt-2'>{design.description}</p>
         </div>
         <a
@@ -112,7 +109,7 @@ export default async function ({ params }) {
       </div>
 
       <div className='flex items-center justify-between mt-6 mb-2'>
-        <h2 className='text-lg font-bold'>{design.name} schematic</h2>
+        <h2 className='text-lg font-bold'>{designName} schematic</h2>
         <a
           href={pdfUrl}
           target='_blank'
@@ -130,8 +127,8 @@ export default async function ({ params }) {
           title='PDF Viewer'
         />
       </div>
-      <div className='flex items-center justify-between mt-6'>
-        <h2 className='text-lg font-bold'>{design.name} board layout</h2>
+      <div className='flex flex-col items-start sm:flex-row sm:items-center justify-between mt-6'>
+        <h2 className='text-lg font-bold'>{designName} board layout</h2>
         <div>
           <a
             href={gerberUrl}

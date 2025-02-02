@@ -4,6 +4,7 @@ import BoardView from '@/app/ui/board-view'
 import { NUM_PARTS_TO_TAG, sortParts } from '@/lib/util'
 import PartTags from '@/app/ui/part-tags'
 import { GhAvatar } from '@/app/ui/gh-avatar'
+import Link from 'next/link'
 
 // Next.js will invalidate the cache when a
 // request comes in, at most once every 60 seconds.
@@ -52,7 +53,7 @@ async function getDesignEntry (slug) {
 
   const { data: repoData, error: repoError } = await supabaseService
     .from('repository')
-    .select('description, html_url, avatar_url')
+    .select('description, html_url, avatar_url, owner_login')
     .eq('id', designData.repository_id)
     .single()
 
@@ -64,6 +65,7 @@ async function getDesignEntry (slug) {
   designData.html_url = repoData.html_url
   designData.repository = {}
   designData.repository.avatar_url = repoData.avatar_url
+  designData.repository.owner_login = repoData.owner_login
   return designData
 }
 
@@ -85,10 +87,14 @@ export default async function ({ params }) {
       <div className='flex items-start justify-between mt-6'>
         <div>
           <div className='flex items-center space-x-2'>
-            <GhAvatar design={design} height={37} width={37} />
+            <Link href={`/profile/${design.repository.owner_login}`}>
+              <GhAvatar design={design} height={37} width={37} />
+            </Link>
             <div>
               <h1 className='text-3xl font-bold'>{designName}</h1>
-              <p className='text-sm'>{design.owner}</p>
+              <Link href={`/profile/${design.repository.owner_login}`}>
+                <p className='text-sm'>{design.owner}</p>
+              </Link>
             </div>
           </div>
           <p className='mt-2'>{design.description}</p>

@@ -1,7 +1,6 @@
 import DesignResults from '@/app/ui/design-results'
+import Pagination from '@/app/ui/pagination'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
 
 export async function generateMetadata ({ params }) {
   const tag = (await params).tag
@@ -40,19 +39,11 @@ export default async function ({ params, searchParams }) {
       <div className='flex-1'>
         <DesignResults designs={results} />
       </div>
-      <div className='flex items-center justify-center mt-12'>
-        <Link className='btn btn-link' href={`/tags/${tag}?page=${prevPageNumber}`}>
-          <ArrowLeft className='h-5 w-5' />
-          Back
-        </Link>
-        <span>
-          {pageNumber}
-        </span>
-        <Link className='btn btn-link' href={`/tags/${tag}?page=${nextPageNumber}`}>
-          Next
-          <ArrowRight className='h-5 w-5' />
-        </Link>
-      </div>
+      <Pagination
+        pageNumber={pageNumber}
+        nextPageNumber={nextPageNumber}
+        prevPageNumber={prevPageNumber}
+      />
     </>
   )
 }

@@ -1,11 +1,10 @@
-import { supabaseService } from '@/lib/db'
 import Search from './ui/search'
 import DesignResults from './ui/design-results'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
+import Pagination from './ui/pagination'
+import { supabaseService } from '@/lib/db'
 
-async function getDesigns (pageNum) {
+export async function getDesigns (pageNum) {
   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
   const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
 
@@ -54,33 +53,11 @@ export default async function Home ({ searchParams }) {
       <div className='mt-12 flex-1'>
         <DesignResults designs={designs} />
       </div>
-      <div className='flex items-center justify-center mt-12'>
-        {pageNumber === prevPageNumber
-          ? (
-            <div className='btn btn-link' disabled>
-              <ArrowLeft className='h-5 w-5' />
-              Back
-            </div>)
-          : (
-            <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>
-              <ArrowLeft className='h-5 w-5' />
-              Back
-            </Link>)}
-        <span>
-          {pageNumber}
-        </span>
-        {pageNumber === nextPageNumber
-          ? (
-            <div className='btn btn-link' disabled>
-              Next
-              <ArrowRight className='h-5 w-5' />
-            </div>)
-          : (
-            <Link className='btn btn-link' href={`/?page=${nextPageNumber}`}>
-              Next
-              <ArrowRight className='h-5 w-5' />
-            </Link>)}
-      </div>
+      <Pagination
+        pageNumber={pageNumber}
+        nextPageNumber={nextPageNumber}
+        prevPageNumber={prevPageNumber}
+      />
     </>
   )
 }

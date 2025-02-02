@@ -5,7 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
   title: 'Open App Note',
-  description: 'Open source electronic reference designs'
+  description: 'Open source electronics reference designs'
 }
 
 export default function RootLayout ({ children }) {

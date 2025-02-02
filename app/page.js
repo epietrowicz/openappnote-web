@@ -43,7 +43,7 @@ export default async function Home ({ searchParams }) {
                 Discover electronic hardware designs
               </h1>
               <p className='py-6'>
-                Explore open source electronic projects to reference for your next design.
+                Explore open source electronics projects to reference for your next design.
                 Search by part number or project tag.
               </p>
               <Search />

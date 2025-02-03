@@ -2,6 +2,7 @@ import './globals.css'
 import Navbar from './ui/navbar'
 import { Suspense } from 'react'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'react-hot-toast'
 
 export const metadata = {
   title: 'Open App Note',
@@ -12,6 +13,7 @@ export default function RootLayout ({ children }) {
   return (
     <html lang='en' data-theme='lofi'>
       <body className='flex flex-col min-h-screen'>
+        <Toaster />
         <Suspense>
           <Navbar />
         </Suspense>

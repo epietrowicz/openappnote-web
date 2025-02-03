@@ -23,6 +23,11 @@ function Navbar () {
       {(pathname !== '/' || pageNumber > 1) && (
         <Search />
       )}
+      <div className='flex justify-end flex-1'>
+        <Link href='/submit' className='btn btn-primary btn-outline'>
+          Submit Design
+        </Link>
+      </div>
     </div>
   )
 }

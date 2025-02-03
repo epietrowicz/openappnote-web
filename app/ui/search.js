@@ -21,6 +21,7 @@ function Search () {
       className='flex items-center justify-center space-x-2'
     >
       <label className='input input-bordered flex items-center gap-2 w-full'>
+        <SearchIcon className='h-5 w-5 opacity-50' />
         <input
           type='text'
           className='grow'
@@ -28,7 +29,6 @@ function Search () {
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
-        <SearchIcon />
       </label>
       <button
         type='submit'

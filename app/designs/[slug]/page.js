@@ -91,7 +91,7 @@ export default async function ({ params }) {
               <GhAvatar design={design} height={37} width={37} />
             </Link>
             <div>
-              <h1 className='text-3xl font-bold'>{designName}</h1>
+              <h1 className='text-3xl font-bold capitalize'>{designName}</h1>
               <Link href={`/profile/${design.repository.owner_login}`}>
                 <p className='text-sm'>{design.owner}</p>
               </Link>
@@ -115,7 +115,7 @@ export default async function ({ params }) {
       </div>
 
       <div className='flex items-center justify-between mt-6 mb-2'>
-        <h2 className='text-lg font-bold'>{designName} schematic</h2>
+        <h2 className='text-lg font-bold capitalize'>{designName} schematic</h2>
         <a
           href={pdfUrl}
           target='_blank'
@@ -134,7 +134,7 @@ export default async function ({ params }) {
         />
       </div>
       <div className='flex flex-col items-start sm:flex-row sm:items-center justify-between mt-6'>
-        <h2 className='text-lg font-bold'>{designName} board layout</h2>
+        <h2 className='text-lg font-bold capitalize'>{designName} board layout</h2>
         <div>
           <a
             href={gerberUrl}

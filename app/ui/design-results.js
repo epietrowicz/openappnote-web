@@ -36,7 +36,7 @@ async function DesignEntry ({ entry }) {
         />
       </figure>
       <div className='card-body'>
-        <h2 className='card-title'>
+        <h2 className='card-title capitalize'>
           {designName}
         </h2>
         <p>

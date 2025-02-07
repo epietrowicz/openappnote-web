@@ -48,6 +48,7 @@ export default async function ({ params, searchParams }) {
     <div>
       <div className='mx-auto flex flex-col items-center justify-center mt-6 max-w-lg'>
         <Image
+      unoptimized
           className='rounded-full'
           alt={`Avatar for ${designs[0].owner}`}
           src={designs[0].repository.avatar_url}

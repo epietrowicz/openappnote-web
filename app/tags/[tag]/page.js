@@ -30,11 +30,15 @@ export default async function ({ params, searchParams }) {
   const nextPageNumber = results?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
 
+  const subTitle = totalHits > 1
+    ? `${totalHits} results for "${decodeURIComponent(tag)}"`
+    : `${totalHits} result for "${decodeURIComponent(tag)}"`
+
   return (
     <>
       <div className='mx-auto text-center mt-6 max-w-lg'>
-        <h1 className='text-4xl font-bold'>{tag}</h1>
-        <h2>{totalHits} results for "{tag}"</h2>
+        <h1 className='text-4xl font-bold'>{decodeURIComponent(tag)}</h1>
+        <h2>{subTitle}</h2>
       </div>
       <div className='flex-1'>
         <DesignResults designs={results} />
@@ -43,6 +47,7 @@ export default async function ({ params, searchParams }) {
         pageNumber={pageNumber}
         nextPageNumber={nextPageNumber}
         prevPageNumber={prevPageNumber}
+        searchQuery={tag}
       />
     </>
   )

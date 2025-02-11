@@ -1,7 +1,15 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
-export default function ({ pageNumber, nextPageNumber, prevPageNumber }) {
+export default function ({ pageNumber, nextPageNumber, prevPageNumber, searchQuery }) {
+  const nextLink = searchQuery == null
+    ? `/?page=${nextPageNumber}`
+    : `/tags/${searchQuery}?page=${nextPageNumber}`
+
+  const prevLink = searchQuery == null
+    ? `/?page=${prevPageNumber}`
+    : `/tags/${searchQuery}?page=${prevPageNumber}`
+
   return (
     <div className='flex items-center justify-center mt-12'>
       {pageNumber === prevPageNumber
@@ -11,7 +19,7 @@ export default function ({ pageNumber, nextPageNumber, prevPageNumber }) {
             Back
           </div>)
         : (
-          <Link className='btn btn-link' href={`/?page=${prevPageNumber}`}>
+          <Link className='btn btn-link' href={prevLink}>
             <ArrowLeft className='h-5 w-5' />
             Back
           </Link>)}
@@ -25,7 +33,7 @@ export default function ({ pageNumber, nextPageNumber, prevPageNumber }) {
             <ArrowRight className='h-5 w-5' />
           </div>)
         : (
-          <Link className='btn btn-link' href={`/?page=${nextPageNumber}`}>
+          <Link className='btn btn-link' href={nextLink}>
             Next
             <ArrowRight className='h-5 w-5' />
           </Link>)}

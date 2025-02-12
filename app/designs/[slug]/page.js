@@ -111,27 +111,29 @@ export default async function ({ params }) {
       </div>
 
       {/* <h2 className='mt-4 text-lg font-bold'>Major Components</h2> */}
-      <table className='table-xs md:table-sm table-pin-rows table w-full mt-4'>
-        <thead>
-          <tr>
-            <th>Part Number</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {parts.map((part) => (
-            <tr key={part.id}>
-              <td className='badge badge-soft badge-sm my-2'>
-                {/* <LinkIcon className='h-3 w-3' /> */}
-                <Link href={`/tags/${part.part_number}`}>
-                  {part.part_number}
-                </Link>
-              </td>
-              <td>{part.description}</td>
+      <div className='max-h-56 overflow-y-auto'>
+        <table className='table-xs md:table-sm table-pin-rows table w-full mt-4'>
+          <thead>
+            <tr>
+              <th className='bg-base-300 rounded-s-box'>Part Number</th>
+              <th className='bg-base-300 rounded-e-box'>Description</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {parts.map((part) => (
+              <tr key={part.id}>
+                <td className='badge badge-soft badge-sm my-2'>
+                  {/* <LinkIcon className='h-3 w-3' /> */}
+                  <Link href={`/tags/${part.part_number}`}>
+                    {part.part_number}
+                  </Link>
+                </td>
+                <td>{part.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* <div className='mt-4'>
         <PartTags parts={parts} />

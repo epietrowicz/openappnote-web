@@ -115,8 +115,8 @@ export default async function ({ params }) {
         <table className='table-xs md:table-sm table-pin-rows table w-full mt-4'>
           <thead>
             <tr>
-              <th className='bg-base-300 rounded-s-box'>Part Number</th>
-              <th className='bg-base-300 rounded-e-box'>Description</th>
+              <th className='bg-base-300'>Part Number</th>
+              <th className='bg-base-300'>Description</th>
             </tr>
           </thead>
           <tbody>

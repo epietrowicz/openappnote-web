@@ -1,6 +1,7 @@
 import DesignResults from '@/app/ui/design-results'
 import Pagination from '@/app/ui/pagination'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
+import { notFound } from 'next/navigation'
 
 export async function generateMetadata ({ params }) {
   const tag = (await params).tag
@@ -10,10 +11,14 @@ export async function generateMetadata ({ params }) {
 }
 
 async function fetchSearchResults (query, page) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`)
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
+    next: { revalidate: 86400 } // ISR: Revalidate every 60 seconds
+  })
+
   if (!res.ok) {
-    throw new Error('Failed to fetch search results')
+    return notFound() // Show 404 if API fails
   }
+
   const data = await res.json()
   return data
 }

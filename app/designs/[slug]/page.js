@@ -1,14 +1,11 @@
 import { supabaseService } from '@/lib/db'
-import { Download, ExternalLink, LinkIcon } from 'lucide-react'
+import { Download, ExternalLink } from 'lucide-react'
 import BoardView from '@/app/ui/board-view'
-import { NUM_PARTS_TO_TAG, sortParts } from '@/lib/util'
-import PartTags from '@/app/ui/part-tags'
+import { sortParts } from '@/lib/util'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 
-// Next.js will invalidate the cache when a
-// request comes in, at most once every 60 seconds.
-export const revalidate = 60
+export const revalidate = 86400
 
 // We'll prerender only the params from `generateStaticParams` at build time.
 // If a request comes in for a path that hasn't been generated,
@@ -110,7 +107,6 @@ export default async function ({ params }) {
         </a>
       </div>
 
-      {/* <h2 className='mt-4 text-lg font-bold'>Major Components</h2> */}
       <div className='max-h-56 overflow-y-auto'>
         <table className='table-xs md:table-sm table-pin-rows table w-full mt-4'>
           <thead>
@@ -123,8 +119,7 @@ export default async function ({ params }) {
             {parts.map((part) => (
               <tr key={part.id}>
                 <td className='badge badge-soft badge-sm my-2'>
-                  {/* <LinkIcon className='h-3 w-3' /> */}
-                  <Link href={`/tags/${part.part_number}`}>
+                  <Link href={`/tags/${part.part_number}/1`}>
                     {part.part_number}
                   </Link>
                 </td>
@@ -134,10 +129,6 @@ export default async function ({ params }) {
           </tbody>
         </table>
       </div>
-
-      {/* <div className='mt-4'>
-        <PartTags parts={parts} />
-      </div> */}
 
       <div className='flex items-center justify-between mt-6 mb-2'>
         <h2 className='text-lg font-bold capitalize'>{designName} schematic</h2>

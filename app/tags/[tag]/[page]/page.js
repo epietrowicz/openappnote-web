@@ -3,6 +3,8 @@ import Pagination from '@/app/ui/pagination'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { notFound } from 'next/navigation'
 
+export const revalidate = 86400
+
 export async function generateMetadata ({ params }) {
   const tag = (await params).tag
   return {
@@ -12,7 +14,7 @@ export async function generateMetadata ({ params }) {
 
 async function fetchSearchResults (query, page) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
-    next: { revalidate: 86400 } // ISR: Revalidate every 60 seconds
+    next: { revalidate: 86400 }
   })
 
   if (!res.ok) {
@@ -23,13 +25,10 @@ async function fetchSearchResults (query, page) {
   return data
 }
 
-export default async function ({ params, searchParams }) {
+export default async function ({ params }) {
   const tag = (await params).tag
-
-  const query = await searchParams
-  const pageNumber = query?.page == null
-    ? 1
-    : parseInt(query.page)
+  const page = (await params).page ?? '1'
+  const pageNumber = parseInt(page)
 
   const { results, totalHits } = await fetchSearchResults(tag, pageNumber)
   const nextPageNumber = results?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1

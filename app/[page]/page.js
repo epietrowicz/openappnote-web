@@ -1,8 +1,7 @@
-import Search from './ui/search'
-import DesignResults from './ui/design-results'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
-import Pagination from './ui/pagination'
 import { supabaseService } from '@/lib/db'
+import DesignResults from '@/app/ui/design-results'
+import Pagination from '@/app/ui/pagination'
 
 export async function getDesigns (pageNum) {
   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
@@ -22,30 +21,16 @@ export async function getDesigns (pageNum) {
   return data
 }
 
-export default async function Home () {
-  const pageNumber = 1
+export default async function Home ({ params }) {
+  const page = (await params).page ?? '1'
+  const pageNumber = parseInt(page)
+
   const designs = await getDesigns(pageNumber)
   const nextPageNumber = designs?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
 
   return (
     <>
-      {pageNumber === 1 && (
-        <div className='hero'>
-          <div className='hero-content text-center'>
-            <div className='max-w-lg'>
-              <h1 className='text-5xl font-bold pt-12'>
-                Discover electronic hardware designs
-              </h1>
-              <p className='py-6'>
-                Explore open source electronics projects to reference for your next design.
-                Search by part number or project tag.
-              </p>
-              <Search />
-            </div>
-          </div>
-        </div>
-      )}
       <div className='mt-12 flex-1'>
         <DesignResults designs={designs} />
       </div>

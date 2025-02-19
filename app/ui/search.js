@@ -11,7 +11,7 @@ function Search () {
   const handleSearch = (e) => {
     e.preventDefault()
     if (query.replace(' ', '') !== '') {
-      router.push(`/tags/${query}`)
+      router.push(`/tags/${query}/1`)
     }
   }
 

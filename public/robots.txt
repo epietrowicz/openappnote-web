@@ -1,3 +1,9 @@
-# Allow all crawlers
+# *
 User-agent: *
 Allow: /
+
+# Host
+Host: https://openappnote.dev
+
+# Sitemaps
+Sitemap: https://openappnote.dev/sitemap.xml

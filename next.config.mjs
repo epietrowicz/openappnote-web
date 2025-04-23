@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server'
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -13,8 +11,7 @@ const nextConfig = {
         hostname: 'avatars.githubusercontent.com'
       }
     ]
-  },
-  metadataBase: new URL('https://openappnote.dev')
+  }
 }
 
 export default nextConfig

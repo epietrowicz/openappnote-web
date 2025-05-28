@@ -10,33 +10,36 @@ function Search () {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    if (query.replace(' ', '') !== '') {
-      router.push(`/tags/${query}/1`)
+    if (query.replaceAll(' ', '') !== '') {
+      const solvedQuery = query.replace(/\s+/g, '-').toLowerCase()
+      router.push(`/tags/1/${solvedQuery}`)
     }
   }
 
   return (
-    <form
-      onSubmit={handleSearch}
-      className='flex items-center justify-center space-x-2'
-    >
-      <label className='input input-bordered flex items-center gap-2 w-full'>
-        <SearchIcon className='h-5 w-5 opacity-50' />
-        <input
-          type='text'
-          className='grow'
-          placeholder='Search'
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-      </label>
-      <button
-        type='submit'
-        className='btn btn-primary'
+    <>
+      <form
+        onSubmit={handleSearch}
+        className='flex items-center justify-center space-x-2'
       >
-        Search
-      </button>
-    </form>
+        <label className='input input-bordered flex items-center gap-2 w-full'>
+          <SearchIcon className='h-5 w-5 opacity-50' />
+          <input
+            type='text'
+            className='grow'
+            placeholder='Search'
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+        </label>
+        <button
+          type='submit'
+          className='btn btn-primary'
+        >
+          Search
+        </button>
+      </form>
+    </>
   )
 }
 

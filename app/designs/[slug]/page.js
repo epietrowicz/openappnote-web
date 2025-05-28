@@ -107,8 +107,9 @@ export default async function ({ params }) {
         </a>
       </div>
 
+      <h2 className='text-lg font-bold capitalize mt-4 mb-2'>Main components</h2>
       <div className='max-h-56 overflow-y-auto'>
-        <table className='table-xs md:table-sm table-pin-rows table w-full mt-4'>
+        <table className='table-xs md:table-sm table-pin-rows table w-full'>
           <thead>
             <tr>
               <th className='bg-base-300'>Part Number</th>
@@ -119,7 +120,7 @@ export default async function ({ params }) {
             {parts.map((part) => (
               <tr key={part.id}>
                 <td className='badge badge-soft badge-sm my-2'>
-                  <Link href={`/tags/${part.part_number}/1`}>
+                  <Link href={`/tags/1/${part.part_number}`}>
                     {part.part_number}
                   </Link>
                 </td>

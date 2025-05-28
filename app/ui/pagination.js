@@ -4,11 +4,11 @@ import Link from 'next/link'
 export default function ({ pageNumber, nextPageNumber, prevPageNumber, searchQuery }) {
   const nextLink = searchQuery == null
     ? `/${nextPageNumber}`
-    : `/tags/${searchQuery}/${nextPageNumber}`
+    : `/tags/${nextPageNumber}/${searchQuery}`
 
   const prevLink = searchQuery == null
     ? `/${prevPageNumber}`
-    : `/tags/${searchQuery}/${prevPageNumber}`
+    : `/tags/${prevPageNumber}/${searchQuery}`
 
   return (
     <div className='flex items-center justify-center mt-12'>

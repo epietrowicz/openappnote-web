@@ -44,7 +44,8 @@ async function fetchBom (schUrls) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ urls: schUrls })
+    body: JSON.stringify({ urls: schUrls }),
+    next: { revalidate: 2592000 }
   })
   if (!res.ok) {
     return notFound() // Show 404 if API fails

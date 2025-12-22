@@ -2,7 +2,9 @@ import React from 'react'
 import KicanvasContent from '@/app/ui/kicanvas-content'
 
 async function fetchSch (fileApiUrl) {
-  const res = await fetch(fileApiUrl)
+  const res = await fetch(fileApiUrl, {
+    next: { revalidate: 2592000 }
+  })
   if (!res.ok) {
     return null
   }

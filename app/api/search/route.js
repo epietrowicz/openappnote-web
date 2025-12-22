@@ -17,7 +17,11 @@ export async function GET (request) {
       per_page: NUM_RESULTS_PER_PAGE,
       page
     })
-    return NextResponse.json({ results: response.data.items, totalHits: response.data.total_count })
+    return NextResponse.json({ results: response.data.items, totalHits: response.data.total_count }, {
+      headers: {
+        'Cache-Control': 'public, max-age=2592000, immutable'
+      }
+    })
   } catch (error) {
     console.error('Error fetching search results:', error)
     return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })

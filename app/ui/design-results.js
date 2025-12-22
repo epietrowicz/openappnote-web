@@ -9,7 +9,9 @@ async function getParts (designId) {
 }
 
 async function fetchRepository (owner, repo) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`)
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`, {
+    next: { revalidate: 2592000 }
+  })
   if (!res.ok) {
     return notFound() // Show 404 if API fails
   }

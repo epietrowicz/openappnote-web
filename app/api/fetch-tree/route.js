@@ -40,7 +40,11 @@ export async function GET (request) {
       return true
     })
     const projectFiles = filteredFiles.filter(file => file.path.endsWith('.kicad_sch') || file.path.endsWith('.kicad_pcb') || file.path.endsWith('.kicad_pro'))
-    return NextResponse.json({ result: projectFiles })
+    return NextResponse.json({ result: projectFiles }, {
+      headers: {
+        'Cache-Control': 'public, max-age=2592000, immutable'
+      }
+    })
   } catch (error) {
     console.error('Error fetching search results:', error)
     return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })

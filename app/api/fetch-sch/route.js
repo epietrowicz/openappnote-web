@@ -22,7 +22,11 @@ export async function GET (request) {
     if (!response.data) {
       return NextResponse.json({ error: 'Schematic file not found' }, { status: 404 })
     }
-    return NextResponse.json({ result: response.data.content })
+    return NextResponse.json({ result: response.data.content }, {
+      headers: {
+        'Cache-Control': 'public, max-age=2592000, immutable'
+      }
+    })
   } catch (error) {
     console.error('Error fetching search results:', error)
     return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })

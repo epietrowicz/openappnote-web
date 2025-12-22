@@ -15,7 +15,11 @@ export async function GET (request) {
       owner,
       repo
     })
-    return NextResponse.json({ result: result.data })
+    return NextResponse.json({ result: result.data }, {
+      headers: {
+        'Cache-Control': 'public, max-age=2592000, immutable'
+      }
+    })
   } catch (error) {
     console.error('Error fetching search results:', error)
     return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })

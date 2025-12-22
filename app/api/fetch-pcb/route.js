@@ -30,7 +30,11 @@ export async function GET (request) {
     if (!pcbFile) {
       return NextResponse.json({ error: 'PCB file not found' }, { status: 404 })
     }
-    return NextResponse.json({ result: pcbRawPath })
+    return NextResponse.json({ result: pcbRawPath }, {
+      headers: {
+        'Cache-Control': 'public, max-age=2592000, immutable'
+      }
+    })
   } catch (error) {
     console.error('Error fetching search results:', error)
     return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })

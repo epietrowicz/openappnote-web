@@ -1,15 +1,10 @@
-import { supabaseService } from '@/lib/db'
+// import { supabaseService } from '@/lib/db'
 import { Download, ExternalLink } from 'lucide-react'
 import BoardView from '@/app/ui/board-view'
 import { sortParts } from '@/lib/util'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import Papa from 'papaparse'
-import KicanvasPreview from '@/app/ui/kicanvas-preview'
-import StepViewer from '@/app/ui/step-viewer'
-import { octokit } from '@/lib/gh'
-import KicanvasContainer from '@/app/ui/kicanvas-container'
 import KicanvasContent from '@/app/ui/kicanvas-content'
 
 export const revalidate = 86400
@@ -58,12 +53,16 @@ async function fetchBom (schUrls) {
 }
 
 async function fetch3d (repository, path) {
-  const ghRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-pcb?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&tree_sha=${repository.default_branch}`)
+  const ghRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-pcb?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&tree_sha=${repository.default_branch}`, {
+    next: { revalidate: 2592000 }
+  })
   if (!ghRes.ok) {
     return notFound() // Show 404 if API fails
   }
   const pcbData = await ghRes.json()
-  const pcbRes = await fetch(pcbData.result)
+  const pcbRes = await fetch(pcbData.result, {
+    next: { revalidate: 2592000 }
+  })
   if (!pcbRes.ok) {
     throw new Error(`Failed to fetch from GitHub: ${pcbRes.statusText}`)
   }
@@ -89,7 +88,9 @@ async function fetchDesign (owner, repo) {
   // const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
   //   next: { revalidate: 86400 }
   // })
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`)
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`, {
+    next: { revalidate: 2592000 }
+  })
   if (!res.ok) {
     return notFound() // Show 404 if API fails
   }
@@ -99,7 +100,9 @@ async function fetchDesign (owner, repo) {
 }
 
 async function fetchTree (repository, path) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-tree?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&ref=${repository.default_branch}`)
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-tree?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&ref=${repository.default_branch}`, {
+    next: { revalidate: 2592000 }
+  })
   if (!res.ok) {
     return notFound() // Show 404 if API fails
   }

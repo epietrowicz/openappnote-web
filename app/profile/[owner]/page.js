@@ -1,5 +1,5 @@
 import DesignResults from '@/app/ui/design-results'
-import { supabaseService } from '@/lib/db'
+// import { supabaseService } from '@/lib/db'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import Image from 'next/image'
 
@@ -11,35 +11,27 @@ export const revalidate = 86400
 export const dynamicParams = true // or false, to 404 on unknown paths
 
 // Good resource: https://supabase.com/blog/fetching-and-caching-supabase-data-in-next-js-server-components
-export async function generateStaticParams () {
-  const { data: ownerData, error: ownerError } = await supabaseService
-    .from('repository')
-    .select('owner_login')
-
-  if (ownerError) {
-    console.log(ownerError)
-    return
-  }
-  return ownerData
-}
+// export async function generateStaticParams () {
+//   return []
+// }
 
 export async function getDesigns (pageNum, owner) {
-  const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
-  const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
+  // const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
+  // const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
 
-  const { data, error } = await supabaseService
-    .from('design')
-    .select('*, repository!inner(id, stars, avatar_url, did_process)')
-    .eq('repository.did_process', true)
-    .eq('repository.owner_login', owner)
-    .order('repository(stars)', { ascending: false })
-    .range(startingOffset, endingOffset)
+  // const { data, error } = await supabaseService
+  //   .from('design')
+  //   .select('*, repository!inner(id, stars, avatar_url, did_process)')
+  //   .eq('repository.did_process', true)
+  //   .eq('repository.owner_login', owner)
+  //   .order('repository(stars)', { ascending: false })
+  //   .range(startingOffset, endingOffset)
 
-  if (error) {
-    console.log(error)
-    return []
-  }
-  return data
+  // if (error) {
+  //   console.log(error)
+  //   return []
+  // }
+  return []
 }
 
 export default async function ({ params }) {

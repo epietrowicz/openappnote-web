@@ -1,8 +1,4 @@
 import Search from './ui/search'
-// import DesignResults from './ui/design-results'
-// import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
-// import Pagination from './ui/pagination'
-// import { supabaseService } from '@/lib/db'
 import Link from 'next/link'
 
 // export async function getDesigns (pageNum) {

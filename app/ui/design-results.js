@@ -1,47 +1,45 @@
-import { supabaseService } from '@/lib/db'
-import { sortParts } from '@/lib/util'
 import { Star } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { GhAvatar } from './gh-avatar'
+import KicanvasPreview from './kicanvas-preview'
+import { notFound } from 'next/navigation'
 
 async function getParts (designId) {
-  const { data: partsData, error: partsError } = await supabaseService
-    .from('design_part')
-    .select('reference_designator, part(*)')
-    .eq('design_id', designId)
+  return []
+}
 
-  if (partsError) {
-    console.log(partsError)
+async function fetchRepository (owner, repo) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`)
+  if (!res.ok) {
+    return notFound() // Show 404 if API fails
   }
-  const parts = sortParts(partsData)
-  return parts.map(({ part }) => part).slice(0, 3)
+  const data = await res.json()
+  return data
 }
 
 async function DesignEntry ({ entry }) {
   const parts = await getParts(entry.id)
-  const designName = entry.name.replaceAll('-', ' ').replaceAll('_', ' ')
+  const { result: repository } = await fetchRepository(entry.repository.owner.login, entry.repository.name)
+  const designName = entry.repository.name.replaceAll('-', ' ').replaceAll('_', ' ')
+  const fullName = entry.repository.full_name
+  const path = entry.path
+  const ref = new URL(entry.url).searchParams.get('ref')
+  const rawUrl = `https://raw.githubusercontent.com/${fullName}/${ref}/${path}`
 
   return (
     <Link
-      href={`/designs/${entry.slug}`}
+      href={`/designs/${entry.repository.owner.login}/${entry.repository.name}/${encodeURIComponent(path)}`}
       className='card bg-base-100 w-full shadow-sm'
     >
       <figure className='bg-base-300 h-[250px] flex items-center justify-center'>
-        <Image
-          unoptimized
-          alt={`Thumbnail for ${designName} design`}
-          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${encodeURIComponent(entry.full_path)}/cover.png`}
-          width={300}
-          height={300}
-        />
+        <KicanvasPreview src={rawUrl} />
       </figure>
       <div className='card-body'>
         <h2 className='card-title capitalize'>
           {designName}
         </h2>
         <p>
-          {entry.repo_description}
+          {entry.repository.description}
         </p>
 
         <div className='flex items-start justify-start space-x-2 flex-wrap'>
@@ -56,12 +54,12 @@ async function DesignEntry ({ entry }) {
 
         <div className='flex items-center justify-start space-x-4 mt-2'>
           <div className='flex items-center space-x-2'>
-            <GhAvatar design={entry} />
-            <p className='text-sm'>{entry.owner}</p>
+            <GhAvatar avatarUrl={repository.owner.avatar_url} />
+            <p className='text-sm'>{entry.repository.owner.login}</p>
           </div>
           <div className='flex items-center space-x-1'>
             <Star className='h-4 w-4 ' />
-            <p className='text-sm'>{entry?.repository?.stars ?? 0}</p>
+            <p className='text-sm'>{repository.stargazers_count ?? 0}</p>
           </div>
         </div>
       </div>
@@ -80,7 +78,7 @@ export default function DesignResults ({ designs }) {
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto px-16 mt-4'>
       {designs.map(v => (
-        <DesignEntry key={v.id} entry={v} />
+        <DesignEntry key={v.sha} entry={v} />
       ))}
     </div>
   )

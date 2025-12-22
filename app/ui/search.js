@@ -11,7 +11,7 @@ function Search () {
   const handleSearch = (e) => {
     e.preventDefault()
     if (query.replaceAll(' ', '') !== '') {
-      const solvedQuery = query.replace(/\s+/g, '-').toLowerCase()
+      const solvedQuery = query.replace(/[\s/]+/g, '-').toLowerCase()
       router.push(`/tags/1/${solvedQuery}`)
     }
   }

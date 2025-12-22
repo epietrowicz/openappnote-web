@@ -1,23 +1,21 @@
-import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { octokit } from '@/lib/gh'
 import { NextResponse } from 'next/server'
 
 export async function GET (request) {
   const { searchParams } = new URL(request.url)
-  const query = searchParams.get('query')
-  const page = searchParams.get('page')
+  const owner = searchParams.get('owner')
+  const repo = searchParams.get('repo')
 
-  if (!query || !page) {
+  if (!owner || !repo) {
     return NextResponse.json({ error: 'Query and page parameters required' }, { status: 400 })
   }
 
   try {
-    const response = await octokit.search.code({
-      q: `${query} in:file extension:kicad_sch`,
-      per_page: NUM_RESULTS_PER_PAGE,
-      page
+    const result = await octokit.rest.repos.get({
+      owner,
+      repo
     })
-    return NextResponse.json({ results: response.data.items, totalHits: response.data.total_count })
+    return NextResponse.json({ result: result.data })
   } catch (error) {
     console.error('Error fetching search results:', error)
     return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })

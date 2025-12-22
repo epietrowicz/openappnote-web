@@ -16,7 +16,7 @@ const KicanvasContent = ({ fileUrls }) => {
       .join('')
 
     // Set the innerHTML with the complete structure
-    containerRef.current.innerHTML = `<kicanvas-embed controls="full">${sourcesHtml}</kicanvas-embed>`
+    containerRef.current.innerHTML = `<kicanvas-embed theme="kicad" controls="full">${sourcesHtml}</kicanvas-embed>`
   }, [fileUrls, scriptLoaded])
 
   return (

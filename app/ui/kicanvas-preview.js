@@ -11,7 +11,7 @@ const KicanvasPreview = ({ src, controls = 'none', type }) => {
           console.log('Loaded', window.kc)
         }}
       />
-      <kicanvas-embed src={src} controls={controls} type={type} />
+      <kicanvas-embed theme='witchhazel' src={src} controls={controls} type={type} />
     </>
   )
 }

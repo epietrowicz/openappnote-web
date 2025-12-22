@@ -86,9 +86,6 @@ async function fetch3d (repository, path) {
 }
 
 async function fetchDesign (owner, repo) {
-  // const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
-  //   next: { revalidate: 86400 }
-  // })
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`, {
     next: { revalidate: 2592000 }
   })
@@ -118,17 +115,22 @@ export default async function ({ params }) {
   // I have no idea why this is happening, but it's related to kicanvas
   if (path === '$$:0:$$') return <></>
 
+  // Get the file path without the file
   const pathParts = path.split('/').filter(value => !value.includes('.kicad_sch') && !value.includes('.kicad_pcb'))
   const pathPartsString = pathParts.join('/')
 
+  // Get the repository data
   const { result: repository } = await fetchDesign(owner, repo)
+  // Get the full tree data
   const { result: projectFiles } = await fetchTree(repository, pathPartsString)
 
   const rawProjectUrls = projectFiles.map(file =>
     `https://raw.githubusercontent.com/${repository.full_name}/${repository.default_branch}/${encodeURIComponent(file.path)}`
   )
+  // Get the BOM data
   const { result: parts } = await fetchBom(rawProjectUrls.filter(url => url.endsWith('.kicad_sch')))
 
+  // Get the root URL for where the design is located within the repository
   const rootUrl = `${repository.html_url}/tree/${repository.default_branch}/${pathPartsString}`
 
   return (

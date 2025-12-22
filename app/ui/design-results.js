@@ -79,8 +79,8 @@ export default function DesignResults ({ designs }) {
   }
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto px-16 mt-4'>
-      {designs.map(v => (
-        <DesignEntry key={v.sha} entry={v} />
+      {designs.map((v, index) => (
+        <DesignEntry key={v.sha + index} entry={v} />
       ))}
     </div>
   )

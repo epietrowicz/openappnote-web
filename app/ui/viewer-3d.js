@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-const StepViewer = ({ glbUri }) => {
+const Viewer3D = ({ glbUri }) => {
   const [isClient, setIsClient] = useState(false)
   const [glbDataUri, setGlbDataUri] = useState('')
 
@@ -41,4 +41,4 @@ const StepViewer = ({ glbUri }) => {
   )
 }
 
-export default StepViewer
+export default Viewer3D

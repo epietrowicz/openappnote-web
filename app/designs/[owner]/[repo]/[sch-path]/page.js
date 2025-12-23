@@ -6,6 +6,8 @@ import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import KicanvasContent from '@/app/ui/kicanvas-content'
+import Viewer3D from '@/app/ui/viewer-3d'
+import PngView from '@/app/ui/png-view'
 
 export const revalidate = 86400
 
@@ -53,36 +55,21 @@ async function fetchBom (schUrls) {
   return { result: await res.json() }
 }
 
-async function fetch3d (repository, path) {
-  const ghRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-pcb?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&tree_sha=${repository.default_branch}`, {
-    next: { revalidate: 2592000 }
-  })
-  if (!ghRes.ok) {
-    return notFound() // Show 404 if API fails
-  }
-  const pcbData = await ghRes.json()
-  const pcbRes = await fetch(pcbData.result, {
-    next: { revalidate: 2592000 }
-  })
-  if (!pcbRes.ok) {
-    throw new Error(`Failed to fetch from GitHub: ${pcbRes.statusText}`)
-  }
-
-  const kicadPcbContent = await pcbRes.text()
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/board-3d-glb`, {
+async function fetchPng (brdUrl) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/board-png`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'text/plain'
+      'Content-Type': 'application/json'
     },
-    body: kicadPcbContent
+    body: JSON.stringify({ url: brdUrl }),
+    next: { revalidate: 2592000 }
   })
   if (!res.ok) {
+    console.error('Failed to fetch PNG', res.statusText)
     return notFound() // Show 404 if API fails
   }
-  // Fetch GLB as arrayBuffer and convert to data URI
-  const glbArrayBuffer = await res.arrayBuffer()
-  const base64 = Buffer.from(glbArrayBuffer).toString('base64')
-  return `data:model/gltf-binary;base64,${base64}`
+  const data = await res.json()
+  return { result: data }
 }
 
 async function fetchDesign (owner, repo) {
@@ -127,6 +114,8 @@ export default async function ({ params }) {
   const rawProjectUrls = projectFiles.map(file =>
     `https://raw.githubusercontent.com/${repository.full_name}/${repository.default_branch}/${encodeURIComponent(file.path)}`
   )
+  const { result: pngResult } = await fetchPng(rawProjectUrls.filter(url => url.endsWith('.kicad_pcb'))[0])
+
   // Get the BOM data
   const { result: parts } = await fetchBom(rawProjectUrls.filter(url => url.endsWith('.kicad_sch')))
 
@@ -198,6 +187,10 @@ export default async function ({ params }) {
       <KicanvasContent
         fileUrls={rawProjectUrls.filter(url => !url.endsWith('.kicad_pro'))}
       />
+      <div className='mt-6'>
+        <h2 className='text-lg font-bold capitalize'>PCB render</h2>
+        <PngView topPngUrl={pngResult.top} bottomPngUrl={pngResult.bottom} />
+      </div>
     </div>
   )
 }

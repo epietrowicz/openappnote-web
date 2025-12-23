@@ -15,9 +15,7 @@ export async function GET (request) {
     // Subtract 1 to get the count of the slashes in the path
     const depth = (path.split('/').length) - 1
     const isNestedFile = depth > 1
-    console.log(path)
-    console.log(isNestedFile)
-    console.log(depth)
+
     const files = await octokit.rest.git.getTree({
       owner,
       repo,

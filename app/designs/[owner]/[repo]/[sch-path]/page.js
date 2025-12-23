@@ -127,12 +127,12 @@ export default async function ({ params }) {
       <div className='flex items-start justify-between mt-6'>
         <div>
           <div className='flex items-center space-x-2'>
-            <Link href={`/designs/${repository.owner.login}`}>
+            <Link href={`https://github.com/${repository.owner.login}`}>
               <GhAvatar avatarUrl={repository.owner.avatar_url} height={37} width={37} />
             </Link>
             <div>
               <h1 className='text-3xl font-bold capitalize'>{repository.name}</h1>
-              <Link href={`/profile/${repository.owner.login}`}>
+              <Link href={`https://github.com/${repository.owner.login}`}>
                 <p className='text-sm'>{repository.owner.login}</p>
               </Link>
             </div>

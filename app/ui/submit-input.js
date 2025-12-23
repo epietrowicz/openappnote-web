@@ -1,13 +1,14 @@
 'use client'
 
-import { LinkIcon, MailIcon } from 'lucide-react'
+import { LinkIcon } from 'lucide-react'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export default function SubmitInput () {
   const [url, setUrl] = useState('')
-  const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const isValidGitHubURL = () => {
     try {
@@ -18,19 +19,10 @@ export default function SubmitInput () {
     }
   }
 
-  const isValidEmail = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!isValidGitHubURL()) {
       toast.error('Please provide a valid GitHub URL')
-      return
-    }
-    if (email !== '' && !isValidEmail()) {
-      toast.error('Please provide a valid email')
       return
     }
     setIsLoading(true)
@@ -39,20 +31,16 @@ export default function SubmitInput () {
       const res = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, email })
+        body: JSON.stringify({ url })
       })
 
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.message || 'Something went wrong')
+        toast.error(data.error || 'Something went wrong')
         return
       }
-      if (data.result === 'WARNING') {
-        toast(data.message)
-        return
-      }
-      if (data.result === 'SUCCESS') {
-        toast.success(data.message)
+      if (data.schPath) {
+        router.push(`/designs/${data.owner}/${data.repo}/${encodeURIComponent(data.schPath)}`)
       }
     } catch (e) {
       console.log(e)
@@ -63,8 +51,8 @@ export default function SubmitInput () {
 
   return (
     <div className='max-w-3xl flex flex-col items-center justify-center text-center p-4'>
-      <h1 className='text-3xl font-bold'>Submit a new design</h1>
-      <p className='mt-2'>Provide the GitHub repository URL of your design to queue it for indexing. Optionally, provide an email to receive a notification when the indexing completes.</p>
+      <h1 className='text-3xl font-bold'>Index a KiCad design</h1>
+      <p className='mt-2'>Provide the GitHub repository URL of your design to index it. Make sure the repository is public and contains a KiCad project.</p>
       <form
         onSubmit={handleSubmit}
         className='flex items-center justify-center space-x-2 mt-4 max-w-xl w-full'
@@ -78,16 +66,6 @@ export default function SubmitInput () {
             value={url}
             onChange={e => setUrl(e.target.value)}
             required
-          />
-        </label>
-        <label className='input input-bordered flex items-center gap-2 w-full'>
-          <MailIcon className='h-5 w-5 opacity-50' />
-          <input
-            type='email'
-            className='grow'
-            placeholder='Email (optional)'
-            value={email}
-            onChange={e => setEmail(e.target.value)}
           />
         </label>
         <button

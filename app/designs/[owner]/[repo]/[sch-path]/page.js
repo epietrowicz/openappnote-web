@@ -41,7 +41,8 @@ export async function generateMetadata ({ params }) {
 }
 
 async function fetchBom (schUrls) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bom`, {
+  const apiUrl = process.env.PREVIEW === '1' ? process.env.NEXT_PUBLIC_DEPLOYED_API_URL : process.env.NEXT_PUBLIC_API_URL
+  const res = await fetch(`${apiUrl}/api/bom`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -56,7 +57,8 @@ async function fetchBom (schUrls) {
 }
 
 async function fetchPng (brdUrl) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/board-png`, {
+  const apiUrl = process.env.PREVIEW === '1' ? process.env.NEXT_PUBLIC_DEPLOYED_API_URL : process.env.NEXT_PUBLIC_API_URL
+  const res = await fetch(`${apiUrl}/api/board-png`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

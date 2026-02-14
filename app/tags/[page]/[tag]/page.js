@@ -15,12 +15,10 @@ export async function generateMetadata ({ params }) {
 }
 
 async function fetchSearchResults (query, page) {
-  // const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
-  //   next: { revalidate: 86400 }
-  // })
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
-    next: { revalidate: 2592000 }
+    next: { revalidate: 86400 }
   })
+
   if (!res.ok) {
     return notFound() // Show 404 if API fails
   }

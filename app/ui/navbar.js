@@ -25,7 +25,7 @@ function Navbar () {
       )}
       <div className='flex justify-end flex-1'>
         <Link href='/submit' className='btn btn-primary btn-outline'>
-          View by link
+          Submit Design
         </Link>
       </div>
     </div>

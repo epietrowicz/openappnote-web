@@ -1,9 +1,10 @@
 import { supabaseService } from '@/lib/db'
 import { Download, ExternalLink } from 'lucide-react'
-import BoardView from '@/app/ui/board-view'
 import { sortParts } from '@/lib/util'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
+import KicanvasContent from '@/app/ui/kicanvas-content'
+import PngView from '@/app/ui/png-view'
 
 export const revalidate = 86400
 
@@ -69,11 +70,13 @@ async function getDesignEntry (slug) {
 export default async function ({ params }) {
   const slug = (await params).slug
   const design = await getDesignEntry(slug)
-  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${encodeURIComponent(design.full_path)}`
+  const encodedPath = design.full_path.split('/').map(s => encodeURIComponent(s)).join('/')
+  const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${encodedPath}`
   const pdfUrl = `${designUrl}/schematic.pdf`
-  const gerberUrl = `${designUrl}/gerbers.zip`
+  const brdUrl = `${designUrl}/board.kicad_pcb`
+  const topPng = `${designUrl}/top.png`
+  const bottomPng = `${designUrl}/bottom.png`
   const bomUrl = `${designUrl}/bom.csv`
-  const iBomUrl = `${designUrl}/ibom.html`
 
   const sortedDesign = sortParts(design.design_part)
   const parts = sortedDesign.map(({ part }) => part)// .slice(0, NUM_PARTS_TO_TAG)
@@ -107,7 +110,18 @@ export default async function ({ params }) {
         </a>
       </div>
 
-      <h2 className='text-lg font-bold capitalize mt-4 mb-2'>Main components</h2>
+      <div className='flex items-center justify-between mt-6 mb-2'>
+        <h2 className='text-lg font-bold capitalize mt-4 mb-2'>Main components</h2>
+        <a
+          href={bomUrl}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='btn btn-link'
+        >
+          Download full BOM
+          <Download className='h-5 w-5' />
+        </a>
+      </div>
       <div className='max-h-56 overflow-y-auto'>
         <table className='table-xs md:table-sm table-pin-rows table w-full'>
           <thead>
@@ -145,46 +159,23 @@ export default async function ({ params }) {
       </div>
       <div className='h-[80vh] rounded-xs'>
         <iframe
-          src={pdfUrl}
+          src={`${pdfUrl}#navpanes=0`}
           className='w-full h-full'
           title='PDF Viewer'
         />
       </div>
-      <div className='flex flex-col items-start sm:flex-row sm:items-center justify-between mt-6'>
+
+      <div className='flex items-center justify-between mt-6 mb-2'>
         <h2 className='text-lg font-bold capitalize'>{designName} board layout</h2>
-        <div>
-          <a
-            href={gerberUrl}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='btn btn-link'
-          >
-            Download gerbers
-            <Download className='h-5 w-5' />
-          </a>
-          <a
-            href={bomUrl}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='btn btn-link'
-          >
-            Download BOM
-            <Download className='h-5 w-5' />
-          </a>
-          <a
-            href={iBomUrl}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='btn btn-link'
-          >
-            Open in new tab
-            <ExternalLink className='h-5 w-5' />
-          </a>
-        </div>
       </div>
-      <div className='h-[90vh] w-full mt-2'>
-        <BoardView iBomUrl={iBomUrl} />
+      <KicanvasContent
+        fileUrls={[brdUrl]}
+      />
+
+      <div className='flex items-center justify-between mt-6 mb-2'>
+        <h2 className='text-lg font-bold capitalize'>{designName} PCB render</h2>
       </div>
+      <PngView topPngUrl={topPng} bottomPngUrl={bottomPng} />
     </div>
   )
 }

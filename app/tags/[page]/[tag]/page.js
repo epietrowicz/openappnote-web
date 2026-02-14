@@ -1,5 +1,6 @@
 import DesignResults from '@/app/ui/design-results'
 import Pagination from '@/app/ui/pagination'
+import { supabaseService } from '@/lib/db'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { notFound } from 'next/navigation'
 
@@ -15,15 +16,20 @@ export async function generateMetadata ({ params }) {
 }
 
 async function fetchSearchResults (query, page) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
-    next: { revalidate: 86400 }
-  })
+  const { data, error } = await supabaseService
+    .from('design')
+    .select('*, design_part(part(*))')
+    .textSearch('search_doc', query)
+    // .order('stars', { ascending: false })
+    .limit(NUM_RESULTS_PER_PAGE)
+    .range((page - 1) * NUM_RESULTS_PER_PAGE, page * NUM_RESULTS_PER_PAGE - 1)
 
-  if (!res.ok) {
-    return notFound() // Show 404 if API fails
+  if (error) {
+    console.log(error)
+    return notFound()
   }
+  console.log(data)
 
-  const data = await res.json()
   return data
 }
 
@@ -33,9 +39,10 @@ export default async function ({ params }) {
   const pageNumber = parseInt(page)
   const searchTitle = tag.replace(/-/g, ' ')
 
-  const { results, totalHits } = await fetchSearchResults(tag, pageNumber)
+  const results = await fetchSearchResults(tag, pageNumber)
   const nextPageNumber = results?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
+  const totalHits = results.length
 
   const subTitle = totalHits > 1
     ? `${totalHits} results for "${searchTitle}"`

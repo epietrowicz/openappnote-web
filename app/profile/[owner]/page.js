@@ -29,8 +29,8 @@ export async function getDesigns (pageNum, owner) {
 
   const { data, error } = await supabaseService
     .from('design')
-    .select('*, repository!inner(id, stars, avatar_url, did_process)')
-    .eq('repository.did_process', true)
+    .select('*, repository!inner(id, stars, avatar_url, process_state)')
+    .eq('repository.process_state', 'PROCESSED')
     .eq('repository.owner_login', owner)
     .order('repository(stars)', { ascending: false })
     .range(startingOffset, endingOffset)

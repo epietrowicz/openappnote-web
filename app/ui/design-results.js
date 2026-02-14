@@ -31,7 +31,7 @@ async function DesignEntry ({ entry }) {
         <Image
           unoptimized
           alt={`Thumbnail for ${designName} design`}
-          src={`https://openappnote-bucket.nyc3.digitaloceanspaces.com/repositories/${encodeURIComponent(entry.full_path)}/cover.png`}
+          src={`https://openappnote-designs.sfo3.digitaloceanspaces.com/repositories/${encodeURIComponent(entry.full_path)}/top.png`}
           width={300}
           height={300}
         />

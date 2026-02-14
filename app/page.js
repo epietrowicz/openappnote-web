@@ -11,8 +11,8 @@ export async function getDesigns (pageNum) {
 
   const { data, error } = await supabaseService
     .from('design')
-    .select('*, repository!inner(id, stars, avatar_url, did_process)')
-    .eq('repository.did_process', true)
+    .select('*, repository!inner(id, stars, avatar_url, process_state)')
+    .eq('repository.process_state', 'PROCESSED')
     .order('repository(stars)', { ascending: false })
     .range(startingOffset, endingOffset)
 

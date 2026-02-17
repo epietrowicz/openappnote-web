@@ -1,23 +1,27 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import ChatMessage from './chat-message'
 
-const ChatModal = ({ pdfUrl }) => {
+import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk'
+const ChatModal = ({ pdfUrl, slug }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  //   const textareaRef = useRef(null)
 
-  //   useEffect(() => {
-  //     const el = textareaRef.current
-  //     if (!el) return
-  //     el.style.height = 'auto'
-  //     el.style.height = `${Math.min(el.scrollHeight, 200)}px`
-  //   }, [message])
+  const flags = useFlags()
+  const ldClient = useLDClient()
+
+  useEffect(() => {
+    if (ldClient && slug) {
+      ldClient.identify({ kind: 'design', key: slug })
+    }
+  }, [ldClient, slug])
+
+  const showChat = flags?.llmChat ?? false
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault()
@@ -40,6 +44,8 @@ const ChatModal = ({ pdfUrl }) => {
       setLoading(false)
     }
   }
+
+  if (!showChat) return null
 
   return (
     <div className='fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2'>
@@ -90,7 +96,7 @@ const ChatModal = ({ pdfUrl }) => {
         onClick={() => setIsOpen(!isOpen)}
         className='btn btn-primary btn-circle'
       >
-        <MessageCircle className='h-5 w-5' />
+        <MessageCircle className='h-6 w-6' />
       </button>
     </div>
   )

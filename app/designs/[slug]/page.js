@@ -73,7 +73,6 @@ async function getDesignEntry (slug) {
 
 export default async function ({ params }) {
   const slug = (await params).slug
-
   // I have no idea why this is happening, but it's related to kicanvas
   if (decodeURIComponent(slug).includes('$$:0:$$')) return <></>
 
@@ -107,7 +106,7 @@ export default async function ({ params }) {
           </div>
           <p className='mt-2'>{design.description}</p>
         </div>
-        <ChatModal pdfUrl={pdfUrl} />
+        <ChatModal pdfUrl={pdfUrl} slug={slug} />
         <a
           href={design.html_url}
           target='_blank'

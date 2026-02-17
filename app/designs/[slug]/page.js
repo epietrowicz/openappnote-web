@@ -5,6 +5,7 @@ import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import KicanvasContent from '@/app/ui/kicanvas-content'
 import PngView from '@/app/ui/png-view'
+import ChatModal from '@/app/ui/chat-modal'
 
 export const revalidate = 86400
 
@@ -28,6 +29,9 @@ export async function generateStaticParams () {
 
 export async function generateMetadata ({ params }) {
   const slug = (await params).slug
+  // I have no idea why this is happening, but it's related to kicanvas
+  if (decodeURIComponent(slug).includes('$$:0:$$')) return
+
   const design = await getDesignEntry(slug)
 
   return {
@@ -69,6 +73,10 @@ async function getDesignEntry (slug) {
 
 export default async function ({ params }) {
   const slug = (await params).slug
+
+  // I have no idea why this is happening, but it's related to kicanvas
+  if (decodeURIComponent(slug).includes('$$:0:$$')) return <></>
+
   const design = await getDesignEntry(slug)
   const encodedPath = design.full_path.split('/').map(s => encodeURIComponent(s)).join('/')
   const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${encodedPath}`
@@ -83,7 +91,7 @@ export default async function ({ params }) {
   const designName = design.name.replaceAll('-', ' ').replaceAll('_', ' ')
 
   return (
-    <div className='w-full max-w-5xl mx-auto px-4'>
+    <div className='w-full max-w-5xl mx-auto px-4 relative'>
       <div className='flex items-start justify-between mt-6'>
         <div>
           <div className='flex items-center space-x-2'>
@@ -99,6 +107,7 @@ export default async function ({ params }) {
           </div>
           <p className='mt-2'>{design.description}</p>
         </div>
+        <ChatModal pdfUrl={pdfUrl} />
         <a
           href={design.html_url}
           target='_blank'

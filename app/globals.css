@@ -22,3 +22,39 @@
     border-color: var(--color-gray-200, currentColor);
   }
 }
+
+/* Markdown in chat messages */
+.markdown-content {
+  line-height: 1.6;
+}
+.markdown-content p + p {
+  margin-top: 0.5em;
+}
+.markdown-content ul, .markdown-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.markdown-content code {
+  background: var(--color-gray-200, #e5e7eb);
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+.markdown-content pre {
+  margin: 0.5em 0;
+  padding: 0.75em;
+  overflow-x: auto;
+  border-radius: 0.25rem;
+  background: var(--color-gray-200, #e5e7eb);
+}
+.markdown-content pre code {
+  padding: 0;
+  background: none;
+}
+.markdown-content strong {
+  font-weight: 600;
+}
+.markdown-content a {
+  color: var(--color-primary, oklch(0.45 0.2 264));
+  text-decoration: underline;
+}

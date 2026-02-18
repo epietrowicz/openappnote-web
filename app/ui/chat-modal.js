@@ -7,19 +7,22 @@ import ChatMessage from './chat-message'
 
 import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk'
 const ChatModal = ({ pdfUrl, slug }) => {
+  const data = navigator.userAgentData
+  console.log('here!!!!!!!!', data)
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   const flags = useFlags()
-  const ldClient = useLDClient()
+  console.log('flags!!!!!!!!', flags)
+  // const ldClient = useLDClient()
 
-  useEffect(() => {
-    if (ldClient && slug) {
-      ldClient.identify({ kind: 'design', key: slug })
-    }
-  }, [ldClient, slug])
+  // useEffect(() => {
+  //   if (ldClient && slug) {
+  //     ldClient.identify({ kind: 'design', key: slug, user_tier: 'free' })
+  //   }
+  // }, [ldClient, slug])
 
   const showChat = flags?.llmChat ?? false
 

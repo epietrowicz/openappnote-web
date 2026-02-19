@@ -19,7 +19,7 @@ async function fetchSearchResults (query, page) {
   const { data, error } = await supabaseService
     .from('design')
     .select('*, design_part(part(*))')
-    .textSearch('search_doc', query)
+    .textSearch('search_doc', query, { type: 'websearch' })
     // .order('stars', { ascending: false })
     .limit(NUM_RESULTS_PER_PAGE)
     .range((page - 1) * NUM_RESULTS_PER_PAGE, page * NUM_RESULTS_PER_PAGE - 1)

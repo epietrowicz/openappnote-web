@@ -106,7 +106,7 @@ export default async function ({ params }) {
           </div>
           <p className='mt-2'>{design.description}</p>
         </div>
-        <ChatModal pdfUrl={pdfUrl} slug={slug} />
+        <ChatModal pdfUrl={pdfUrl} slug={slug} designPath={design.full_path} />
         <a
           href={design.html_url}
           target='_blank'

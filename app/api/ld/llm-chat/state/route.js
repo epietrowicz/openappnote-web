@@ -2,18 +2,19 @@ import { NextResponse } from 'next/server'
 
 const LD_API_BASE = 'https://app.launchdarkly.com/api/v2'
 
-// TODO: Test this
-export async function POST () {
+export async function POST (req) {
   const token = process.env.LAUNCHDARKLY_ACCESS_TOKEN
   const projectKey = process.env.LAUNCHDARKLY_PROJECT_KEY
-  const environmentKey = process.env.LAUNCHDARKLY_ENVIRONMENT_KEY
+  const environmentKey = process.env.NODE_ENV === 'development' ? 'test' : 'production'
 
-  if (!token || !projectKey || !environmentKey) {
+  if (!token || !projectKey) {
     return NextResponse.json(
-      { error: 'Missing LAUNCHDARKLY_ACCESS_TOKEN, LAUNCHDARKLY_PROJECT_KEY, or LAUNCHDARKLY_ENVIRONMENT_KEY' },
+      { error: 'Missing LAUNCHDARKLY_ACCESS_TOKEN, LAUNCHDARKLY_PROJECT_KEY' },
       { status: 501 }
     )
   }
+
+  const { on } = await req.json()
 
   const url = `${LD_API_BASE}/flags/${projectKey}/llm-chat`
   try {
@@ -25,8 +26,7 @@ export async function POST () {
       },
       body: JSON.stringify({
         environmentKey,
-        instructions: [{ kind: 'turnFlagOff' }],
-        comment: 'Disabled via /api/ld/disable'
+        instructions: [{ kind: on ? 'turnFlagOn' : 'turnFlagOff' }]
       })
     })
 

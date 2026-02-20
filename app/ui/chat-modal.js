@@ -1,29 +1,20 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import ChatMessage from './chat-message'
 
-import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk'
-const ChatModal = ({ pdfUrl, slug }) => {
-  const data = navigator.userAgentData
-  console.log('here!!!!!!!!', data)
+import { useFlags } from 'launchdarkly-react-client-sdk'
+const ChatModal = ({ pdfUrl, designPath }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   const flags = useFlags()
-  console.log('flags!!!!!!!!', flags)
-  // const ldClient = useLDClient()
 
-  // useEffect(() => {
-  //   if (ldClient && slug) {
-  //     ldClient.identify({ kind: 'design', key: slug, user_tier: 'free' })
-  //   }
-  // }, [ldClient, slug])
-
+  const model = flags?.designReviewModel
   const showChat = flags?.llmChat ?? false
 
   const handleSendMessage = async (e) => {
@@ -36,7 +27,7 @@ const ChatModal = ({ pdfUrl, slug }) => {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: message, ...(pdfUrl && { pdfUrl }) })
+        body: JSON.stringify({ query: message, pdfUrl, designPath, model })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Request failed')
@@ -53,9 +44,12 @@ const ChatModal = ({ pdfUrl, slug }) => {
   return (
     <div className='fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2'>
       {isOpen && (
-        <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-lg w-[400px] max-h-[500px] overflow-y-auto'>
+        <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-lg w-[500px] max-h-[500px] overflow-y-auto'>
           <div className='flex items-center justify-between mb-2'>
-            <h2 className='text-lg font-semibold'>Chat</h2>
+            <div>
+              <h2 className='text-lg font-semibold'>Chat</h2>
+              <p className='text-xs text-gray-500'>{model}</p>
+            </div>
             <button
               onClick={() => setIsOpen(false)}
               className='text-gray-500 hover:text-gray-700'

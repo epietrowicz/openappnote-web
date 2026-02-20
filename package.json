@@ -12,14 +12,17 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.709.0",
     "@aws-sdk/s3-request-presigner": "^3.989.0",
+    "@langchain/anthropic": "^1.3.19",
     "@launchdarkly/node-server-sdk": "^9.10.6",
     "@octokit/rest": "^21.0.2",
     "@supabase/supabase-js": "^2.47.2",
     "@tailwindcss/postcss": "^4.0.0-beta.9",
     "@tracespace/core": "^5.0.0-alpha.0",
     "@vercel/analytics": "^1.4.1",
+    "axios": "^1.13.5",
     "isomorphic-dompurify": "^2.20.0",
     "jszip": "^3.10.1",
+    "langchain": "^1.2.25",
     "launchdarkly-react-client-sdk": "^3.9.0",
     "lucide-react": "^0.462.0",
     "meilisearch": "^0.46.0",
@@ -33,7 +36,8 @@
     "react-markdown": "^10.1.0",
     "react-zoom-pan-pinch": "^3.6.1",
     "remark-gfm": "^4.0.1",
-    "resend": "^4.1.2"
+    "resend": "^4.1.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "daisyui": "^5.0.0-beta.1",

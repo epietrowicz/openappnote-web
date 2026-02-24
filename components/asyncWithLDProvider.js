@@ -5,8 +5,9 @@ import { asyncWithLDProvider, basicLogger } from 'launchdarkly-react-client-sdk'
 
 const defaultContext = {
   kind: 'user',
-  key: 'eric-test-user',
-  user_tier: 'free'
+  key: 'ericp',
+  user_tier: 'free',
+  years_of_experience: 1
 }
 
 const createLDConfig = (clientSideID, context = defaultContext) => ({

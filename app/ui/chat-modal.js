@@ -5,16 +5,20 @@ import { MessageCircle, X } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import ChatMessage from './chat-message'
 
-import { useFlags } from 'launchdarkly-react-client-sdk'
+import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk'
 const ChatModal = ({ pdfUrl, designPath }) => {
+  const ldClient = useLDClient()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   const flags = useFlags()
+  const context = ldClient.getContext()
 
-  const model = flags?.designReviewModel
+  const userId = context.key
+  const tier = context.user_tier
+  const yearsOfExperience = context?.years_of_experience ?? 1
   const showChat = flags?.llmChat ?? false
 
   const handleSendMessage = async (e) => {
@@ -27,7 +31,13 @@ const ChatModal = ({ pdfUrl, designPath }) => {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: message, pdfUrl, designPath, model })
+        body: JSON.stringify({
+          query: message,
+          pdfUrl,
+          userId,
+          tier,
+          yearsOfExperience
+        })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Request failed')
@@ -46,10 +56,7 @@ const ChatModal = ({ pdfUrl, designPath }) => {
       {isOpen && (
         <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-lg w-[500px] max-h-[500px] overflow-y-auto'>
           <div className='flex items-center justify-between mb-2'>
-            <div>
-              <h2 className='text-lg font-semibold'>Chat</h2>
-              <p className='text-xs text-gray-500'>{model}</p>
-            </div>
+            <h2 className='text-lg font-semibold'>Chat</h2>
             <button
               onClick={() => setIsOpen(false)}
               className='text-gray-500 hover:text-gray-700'

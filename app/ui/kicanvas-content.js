@@ -1,8 +1,12 @@
 'use client'
 
 import Script from 'next/script'
+import { useFlags } from 'launchdarkly-react-client-sdk'
 
 const KicanvasContent = ({ fileUrls }) => {
+  const flags = useFlags()
+  const interactivePcb = flags?.interactivePcbViewer ?? false
+
   return (
     <>
       <Script
@@ -12,7 +16,13 @@ const KicanvasContent = ({ fileUrls }) => {
           console.log('Loaded', window.kc)
         }}
       />
-      <kicanvas-embed theme='' src={fileUrls[0]} controls='full' type='board' />
+      <kicanvas-embed
+        key={interactivePcb ? 'full' : 'basic'}
+        theme=''
+        src={fileUrls[0]}
+        controls={interactivePcb ? 'full' : 'basic'}
+        type='board'
+      />
     </>
   )
 }

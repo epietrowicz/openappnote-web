@@ -4,12 +4,11 @@ import Link from 'next/link'
 import React from 'react'
 import Search from './search'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useLDClient, useFlags } from 'launchdarkly-react-client-sdk'
+import { useLDClient } from 'launchdarkly-react-client-sdk'
 
 function Navbar () {
   const ldClient = useLDClient()
   const context = ldClient.getContext()
-  const llmChat = useFlags().llmChat
 
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -28,9 +27,6 @@ function Navbar () {
   const isPro = context.user_tier === 'paid'
 
   const getUpdateButton = () => {
-    if (!llmChat) {
-      return <></>
-    }
     if (isPro) {
       return (
         <button className='btn btn-primary' onClick={handleDowngrade}>

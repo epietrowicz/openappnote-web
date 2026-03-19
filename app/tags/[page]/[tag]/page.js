@@ -14,24 +14,46 @@ export async function generateMetadata ({ params }) {
     title: `Reference electronics designs for ${searchTitle}`
   }
 }
-
 async function fetchSearchResults (query, page) {
-  const { data, error } = await supabaseService
+  const base = supabaseService
     .from('design')
     .select('*, design_part(part(*))')
-    .textSearch('search_doc', query, { type: 'websearch' })
-    // .order('stars', { ascending: false })
     .limit(NUM_RESULTS_PER_PAGE)
     .range((page - 1) * NUM_RESULTS_PER_PAGE, page * NUM_RESULTS_PER_PAGE - 1)
+
+  const isShort = query.trim().length <= 5
+
+  const search = isShort
+    ? base.ilike('search_doc', `%${query}%`)
+    : base.textSearch('search_doc', `'${query.toLowerCase()}':*`, {
+      config: 'simple'
+    })
+
+  const { data, error } = await search
 
   if (error) {
     console.log(error)
     return notFound()
   }
-  console.log(data)
 
   return data
 }
+// async function fetchSearchResults (query, page) {
+//   const { data, error } = await supabaseService
+//     .from('design')
+//     .select('*, design_part(part(*))')
+//     .textSearch('search_doc', `${query}*`, { type: 'websearch', config: 'simple' })
+//     // .order('stars', { ascending: false })
+//     .limit(NUM_RESULTS_PER_PAGE)
+//     .range((page - 1) * NUM_RESULTS_PER_PAGE, page * NUM_RESULTS_PER_PAGE - 1)
+
+//   if (error) {
+//     console.log(error)
+//     return notFound()
+//   }
+
+//   return data
+// }
 
 export default async function ({ params }) {
   const tag = (await params).tag

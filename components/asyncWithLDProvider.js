@@ -7,7 +7,7 @@ const defaultContext = {
   kind: 'user',
   key: 'ericp',
   user_tier: 'free',
-  years_of_experience: 1
+  years_of_experience: 15
 }
 
 const createLDConfig = (clientSideID, context = defaultContext) => ({

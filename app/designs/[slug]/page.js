@@ -5,6 +5,9 @@ import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import KicanvasContent from '@/app/ui/kicanvas-content'
 import PngView from '@/app/ui/png-view'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeSanitize from 'rehype-sanitize'
 
 export const revalidate = 86400
 
@@ -29,6 +32,9 @@ export async function generateStaticParams () {
 export async function generateMetadata ({ params }) {
   const slug = (await params).slug
   const design = await getDesignEntry(slug)
+  if (design === null) {
+    return null
+  }
 
   return {
     title: design?.repo_description == null
@@ -38,6 +44,9 @@ export async function generateMetadata ({ params }) {
 }
 
 async function getDesignEntry (slug) {
+  if (slug === '%24%24%3A0%3A%24%24' || slug === '$$:0:$$') {
+    return null
+  }
   const { data: designData, error: designError } = await supabaseService
     .from('design')
     .select('*, design_part(reference_designator, part(*))')
@@ -45,31 +54,57 @@ async function getDesignEntry (slug) {
     .single()
 
   if (designError) {
-    console.log(designError)
+    console.log('Error getting design entry:', designError)
     throw new Error(designError.message)
   }
 
   const { data: repoData, error: repoError } = await supabaseService
     .from('repository')
-    .select('description, html_url, avatar_url, owner_login')
+    .select('description, html_url, avatar_url, owner_login, full_name')
     .eq('id', designData.repository_id)
     .single()
 
   if (repoError) {
-    console.log(repoError)
+    console.log('Error getting repository data:', repoError)
     throw new Error(repoError.message)
   }
   designData.description = repoData.description
   designData.html_url = repoData.html_url
+  designData.full_name = repoData.full_name
   designData.repository = {}
   designData.repository.avatar_url = repoData.avatar_url
   designData.repository.owner_login = repoData.owner_login
   return designData
 }
 
+// const getReadMe = async (design) => {
+//   try {
+//     let mainBranch = 'main'
+//     let readMeUrl = `https://raw.githubusercontent.com/${design.full_name}/refs/heads/${mainBranch}/README.md`
+//     let readMe = await fetch(readMeUrl)
+//     if (!readMe.ok) {
+//       mainBranch = 'master'
+//       readMeUrl = `https://raw.githubusercontent.com/${design.full_name}/refs/heads/${mainBranch}/README.md`
+//       readMe = await fetch(readMeUrl)
+//     }
+//     const readMeText = await readMe.text()
+
+//     // Build base to rewrite relative markdown links into absolute GitHub URLs.
+//     const githubBaseUrl = `https://github.com/${design.owner}/${design.name}/blob/main/`
+
+//     return { readMeText, githubBaseUrl }
+//   } catch (error) {
+//     console.log('Error getting readme:', error)
+//     return null
+//   }
+// }
+
 export default async function ({ params }) {
   const slug = (await params).slug
   const design = await getDesignEntry(slug)
+  if (design === null) {
+    return
+  }
   const encodedPath = design.full_path.split('/').map(s => encodeURIComponent(s)).join('/')
   const designUrl = `${process.env.DO_BUCKET_PATH}/repositories/${encodedPath}`
   const pdfUrl = `${designUrl}/schematic.pdf`
@@ -77,6 +112,9 @@ export default async function ({ params }) {
   const topPng = `${designUrl}/top.png`
   const bottomPng = `${designUrl}/bottom.png`
   const bomUrl = `${designUrl}/bom.csv`
+  // const readMeData = await getReadMe(design)
+  // const readMe = readMeData?.readMeText
+  // const githubBaseUrl = readMeData?.githubBaseUrl
 
   const sortedDesign = sortParts(design.design_part)
   const parts = sortedDesign.map(({ part }) => part)// .slice(0, NUM_PARTS_TO_TAG)
@@ -165,17 +203,62 @@ export default async function ({ params }) {
         />
       </div>
 
-      <div className='flex items-center justify-between mt-6 mb-2'>
-        <h2 className='text-lg font-bold capitalize'>{designName} board layout</h2>
-      </div>
+      <h2 className='text-lg font-bold capitalize mt-6 mb-2'>{designName} board layout</h2>
       <KicanvasContent
         fileUrls={[brdUrl]}
       />
 
-      <div className='flex items-center justify-between mt-6 mb-2'>
-        <h2 className='text-lg font-bold capitalize'>{designName} PCB render</h2>
-      </div>
+      {/* <h2 className='text-lg font-bold capitalize mt-6 mb-2'>{designName} PCB render</h2>
       <PngView topPngUrl={topPng} bottomPngUrl={bottomPng} />
+
+      {readMe && (
+        <>
+          <h2 className='text-lg font-bold capitalize mt-6 mb-2'>{designName} README</h2>
+          <div className='prose max-w-none mt-2 rounded-md border border-base-300 p-6'>
+            <ReactMarkdown
+              components={{
+                // Drop relative images from README entirely.
+                // Many READMEs use `![...](../../releases/.../foo.png)` which won't resolve here.
+                img: ({ src, ...props }) => {
+                  if (typeof src === 'string' && !src.startsWith('http://') && !src.startsWith('https://')) {
+                    return null
+                  }
+                  return <img src={src} {...props} />
+                }
+              }}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeSanitize]}
+              urlTransform={(url, key) => {
+                if (!url) return url
+
+                // Leave fragment-only links and common absolute protocols alone.
+                if (
+                  url.startsWith('#') ||
+                  url.startsWith('http://') ||
+                  url.startsWith('https://') ||
+                  url.startsWith('mailto:') ||
+                  url.startsWith('tel:') ||
+                  url.startsWith('data:')
+                ) return url
+
+                // Avoid rewriting absolute-path URLs. Those are likely relative to this page's route.
+                if (url.startsWith('/')) return url
+
+                // Only rewrite markdown *link* URLs. Images are handled separately via `components.img`.
+                if (key !== 'href') return url
+
+                if (githubBaseUrl) {
+                  return new URL(url, githubBaseUrl).toString()
+                }
+
+                return url
+              }}
+            >
+              {readMe}
+            </ReactMarkdown>
+          </div>
+        </>
+      )} */}
     </div>
   )
 }

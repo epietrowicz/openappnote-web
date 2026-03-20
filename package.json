@@ -15,6 +15,7 @@
     "@octokit/rest": "^21.0.2",
     "@supabase/supabase-js": "^2.47.2",
     "@tailwindcss/postcss": "^4.0.0-beta.9",
+    "@tailwindcss/typography": "^0.5.19",
     "@tracespace/core": "^5.0.0-alpha.0",
     "@vercel/analytics": "^1.4.1",
     "isomorphic-dompurify": "^2.20.0",
@@ -27,7 +28,10 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.1",
+    "react-markdown": "^10.1.0",
     "react-zoom-pan-pinch": "^3.6.1",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
     "resend": "^4.1.2"
   },
   "devDependencies": {

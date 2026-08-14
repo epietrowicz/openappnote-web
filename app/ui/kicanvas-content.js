@@ -12,7 +12,7 @@ const KicanvasContent = ({ fileUrls }) => {
           console.log('Loaded', window.kc)
         }}
       />
-      <kicanvas-embed theme='' src={fileUrls[0]} controls='full' type='board' />
+      <kicanvas-embed key={fileUrls[0]} theme='kicad' src={fileUrls[0]} controls='full' type='board' />
     </>
   )
 }

@@ -3,29 +3,30 @@ import { supabaseService } from '@/lib/db'
 import DesignResults from '@/app/ui/design-results'
 import Pagination from '@/app/ui/pagination'
 
-export async function getDesigns (pageNum) {
-  const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
-  const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
+// export async function getDesigns (pageNum) {
+//   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
+//   const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
 
-  const { data, error } = await supabaseService
-    .from('design')
-    .select('*, repository!inner(id, stars, avatar_url, process_state)')
-    .eq('repository.process_state', 'PROCESSED')
-    .order('repository(stars)', { ascending: false })
-    .range(startingOffset, endingOffset)
+//   const { data, error } = await supabaseService
+//     .from('design')
+//     .select('*, repository!inner(id, stars, avatar_url, process_state)')
+//     .eq('repository.process_state', 'PROCESSED')
+//     .order('repository(stars)', { ascending: false })
+//     .range(startingOffset, endingOffset)
 
-  if (error) {
-    console.log(error)
-    return []
-  }
-  return data
-}
+//   if (error) {
+//     console.log(error)
+//     return []
+//   }
+//   return data
+// }
 
 export default async function Home ({ params }) {
   const page = (await params).page ?? '1'
   const pageNumber = parseInt(page)
 
-  const designs = await getDesigns(pageNumber)
+  // const designs = await getDesigns(pageNumber)
+  const designs = []
   const nextPageNumber = designs?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
   const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
 

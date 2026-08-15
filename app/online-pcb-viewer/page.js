@@ -22,7 +22,7 @@ export default function OnlinePcbViewerPage () {
 
         <PcbViewerUpload />
 
-        <div className='mt-6 w-full text-left'>
+        {/* <div className='mt-6 w-full text-left'>
           <h2 className='text-sm font-semibold uppercase tracking-wide text-base-content/60'>
             Supported formats
           </h2>
@@ -31,7 +31,7 @@ export default function OnlinePcbViewerPage () {
               <li key={format}>{format}</li>
             ))}
           </ul>
-        </div>
+        </div> */}
       </div>
     </div>
   )

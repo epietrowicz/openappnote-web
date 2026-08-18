@@ -1,6 +1,5 @@
-import { supabaseService } from '@/lib/db'
-import { meilisearchClient } from '@/lib/meilisearch'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
+import { octokit } from '@/lib/gh'
 import { NextResponse } from 'next/server'
 
 export async function GET (request) {
@@ -12,30 +11,18 @@ export async function GET (request) {
     return NextResponse.json({ error: 'Query and page parameters required' }, { status: 400 })
   }
 
-  const offset = (page - 1) * NUM_RESULTS_PER_PAGE
-  const index = meilisearchClient.index('design')
+  try {
+    const response = await octokit.search.code({
+      // q: `${query} in:file extension:kicad_sch`,
+      q: 'extension:kicad_pcb',
+      per_page: NUM_RESULTS_PER_PAGE,
+      page
+    })
 
-  const searchResult = await index.search(query, {
-    limit: NUM_RESULTS_PER_PAGE,
-    offset,
-    matchingStrategy: 'all'
-  })
-
-  const promises = searchResult.hits.map(async (design) => {
-    const { data, error } = await supabaseService
-      .from('design')
-      .select('*, repository(id, stars, avatar_url)')
-      .order('repository(stars)', { ascending: false })
-      .eq('id', design.id)
-      .single()
-
-    if (error) {
-      console.log(error)
-      return {}
-    }
-    return data
-  })
-  const results = await Promise.all(promises)
-  const orderedResults = results.sort((a, b) => b.repository.stars - a.repository.stars)
-  return NextResponse.json({ results: orderedResults, totalHits: searchResult.estimatedTotalHits })
+    console.log(response)
+    return NextResponse.json({ results: response.data.items, totalHits: response.data.total_count })
+  } catch (error) {
+    console.error('Error fetching search results:', error)
+    return NextResponse.json({ error: 'Failed to fetch search results' }, { status: 500 })
+  }
 }

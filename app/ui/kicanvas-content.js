@@ -14,7 +14,7 @@ function mountEmbed (container, { fileContent, fileName, src }) {
 
   if (fileContent != null) {
     template.innerHTML =
-      '<kicanvas-embed controls="full" type="board" theme="kicad">' +
+      '<kicanvas-embed controls="full" theme="kicad">' +
       `<kicanvas-source name="${escapeAttr(fileName)}"></kicanvas-source></kicanvas-embed>`
 
     const embed = template.content.firstElementChild
@@ -28,7 +28,7 @@ function mountEmbed (container, { fileContent, fileName, src }) {
     source.load_inline_source = () => new File([fileContent], fileName, { type: 'text/plain' })
   } else if (src) {
     template.innerHTML =
-      `<kicanvas-embed src="${escapeAttr(src)}" controls="full" type="board" theme="kicad"></kicanvas-embed>`
+      `<kicanvas-embed src="${escapeAttr(src)}" controls="full" theme="kicad"></kicanvas-embed>`
     container.replaceChildren(template.content.firstElementChild)
   }
 }
@@ -36,7 +36,7 @@ function mountEmbed (container, { fileContent, fileName, src }) {
 export default function KicanvasContent ({
   fileUrls,
   fileContent,
-  fileName = 'board.kicad_pcb'
+  fileName = 'board'
 }) {
   const containerRef = useRef(null)
   const [ready, setReady] = useState(
@@ -51,11 +51,7 @@ export default function KicanvasContent ({
 
     customElements.whenDefined('kicanvas-embed').then(() => {
       if (cancelled) return
-      mountEmbed(container, {
-        fileContent,
-        fileName,
-        src: fileUrls?.[0]
-      })
+      mountEmbed(container, { fileContent, fileName, src: fileUrls?.[0] })
     })
 
     return () => {

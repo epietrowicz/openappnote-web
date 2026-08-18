@@ -24,8 +24,8 @@ function Navbar () {
         <Search />
       )}
       <div className='flex justify-end flex-1'>
-        <Link href='/submit' className='btn btn-primary btn-outline'>
-          Submit Design
+        <Link href='/online-pcb-viewer' className='btn btn-primary btn-outline'>
+          Online PCB Viewer
         </Link>
       </div>
     </div>

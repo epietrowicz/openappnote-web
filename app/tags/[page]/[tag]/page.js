@@ -1,4 +1,5 @@
 import DesignResults from '@/app/ui/design-results'
+import { getPublicBaseUrl } from '@/lib/public-api-url'
 import Pagination from '@/app/ui/pagination'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import { notFound } from 'next/navigation'
@@ -18,7 +19,7 @@ async function fetchSearchResults (query, page) {
   // const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
   //   next: { revalidate: 86400 }
   // })
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`)
+  const res = await fetch(`${getPublicBaseUrl()}/api/search?query=${query}&page=${page}`)
   if (!res.ok) {
     console.error('Error fetching search results:', res.statusText)
     return notFound() // Show 404 if API fails

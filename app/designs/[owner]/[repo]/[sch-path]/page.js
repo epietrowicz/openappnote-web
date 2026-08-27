@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import { getKicadProjectName } from '@/lib/util'
-import { getPublicApiUrl } from '@/lib/public-api-url'
+import { getPublicApiUrl, getPublicBaseUrl } from '@/lib/public-api-url'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -47,7 +47,7 @@ async function fetchBom (rootSchUrl, remainingSchUrls) {
 }
 
 async function fetchDesign (owner, repo) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`)
+  const res = await fetch(`${getPublicBaseUrl()}/api/fetch-repository?owner=${owner}&repo=${repo}`)
   if (!res.ok) {
     return notFound()
   }
@@ -56,7 +56,7 @@ async function fetchDesign (owner, repo) {
 }
 
 async function fetchTree (repository, path) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-tree?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&ref=${repository.default_branch}`)
+  const res = await fetch(`${getPublicBaseUrl()}/api/fetch-tree?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&ref=${repository.default_branch}`)
   if (!res.ok) {
     return notFound()
   }

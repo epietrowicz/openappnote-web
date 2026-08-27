@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react'
+import { getPublicBaseUrl } from '@/lib/public-api-url'
 import Link from 'next/link'
 import { GhAvatar } from './gh-avatar'
 import { notFound } from 'next/navigation'
@@ -8,7 +9,7 @@ async function getParts (designId) {
 }
 
 async function fetchRepository (owner, repo) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`)
+  const res = await fetch(`${getPublicBaseUrl()}/api/fetch-repository?owner=${owner}&repo=${repo}`)
   if (!res.ok) {
     return notFound() // Show 404 if API fails
   }

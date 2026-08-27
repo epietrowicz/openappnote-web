@@ -1,64 +1,57 @@
 import DesignResults from '@/app/ui/design-results'
-import { supabaseService } from '@/lib/db'
+import { octokit } from '@/lib/gh'
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import Image from 'next/image'
+import { notFound } from 'next/navigation'
 
 export const revalidate = 86400
+export const dynamicParams = true
 
-// We'll prerender only the params from `generateStaticParams` at build time.
-// If a request comes in for a path that hasn't been generated,
-// Next.js will server-render the page on-demand.
-export const dynamicParams = true // or false, to 404 on unknown paths
-
-// Good resource: https://supabase.com/blog/fetching-and-caching-supabase-data-in-next-js-server-components
-export async function generateStaticParams () {
-  const { data: ownerData, error: ownerError } = await supabaseService
-    .from('repository')
-    .select('owner_login')
-
-  if (ownerError) {
-    console.log(ownerError)
-    return
+async function getGithubUser (owner) {
+  try {
+    const { data } = await octokit.users.getByUsername({ username: owner })
+    return data
+  } catch {
+    return null
   }
-  return ownerData
 }
 
-export async function getDesigns (pageNum, owner) {
-  const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
-  const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
+async function getOwnerDesigns (owner, pageNum) {
+  try {
+    const response = await octokit.search.code({
+      q: `user:${owner} extension:kicad_sch`,
+      per_page: NUM_RESULTS_PER_PAGE,
+      page: pageNum
+    })
 
-  const { data, error } = await supabaseService
-    .from('design')
-    .select('*, repository!inner(id, stars, avatar_url, process_state)')
-    .eq('repository.process_state', 'PROCESSED')
-    .eq('repository.owner_login', owner)
-    .order('repository(stars)', { ascending: false })
-    .range(startingOffset, endingOffset)
-
-  if (error) {
-    console.log(error)
-    return []
+    return {
+      designs: response.data.items,
+      totalCount: response.data.total_count
+    }
+  } catch (error) {
+    console.error('Error fetching GitHub designs:', error)
+    return { designs: [], totalCount: 0 }
   }
-  return data
 }
 
-export default async function ({ params }) {
+export async function generateMetadata ({ params }) {
   const owner = (await params).owner
-  const page = (await params).page ?? '1'
-  const pageNumber = parseInt(page)
+  const user = await getGithubUser(owner)
 
-  const designs = await getDesigns(pageNumber, owner)
-  // const nextPageNumber = designs?.length < NUM_RESULTS_PER_PAGE ? pageNumber : pageNumber + 1
-  // const prevPageNumber = pageNumber === 1 ? 1 : pageNumber - 1
-
-  if (designs.length === 0) {
-    return (
-      <div className='mx-auto text-center mt-6 max-w-lg'>
-        <h1 className='text-4xl font-bold'>{owner}</h1>
-        <h2>No designs</h2>
-      </div>
-    )
+  return {
+    title: user?.name ? `${user.name} (@${owner})` : owner,
+    description: user?.bio ?? `KiCad reference designs by ${owner} on GitHub`
   }
+}
+
+export default async function ProfilePage ({ params }) {
+  const owner = (await params).owner
+  const pageNumber = 1
+
+  const user = await getGithubUser(owner)
+  if (!user) notFound()
+
+  const { designs, totalCount } = await getOwnerDesigns(owner, pageNumber)
 
   return (
     <div>
@@ -66,8 +59,8 @@ export default async function ({ params }) {
         <Image
           unoptimized
           className='rounded-full'
-          alt={`Avatar for ${designs[0].owner}`}
-          src={designs[0].repository.avatar_url}
+          alt={`Avatar for ${owner}`}
+          src={user.avatar_url}
           width={80}
           height={80}
         />
@@ -78,16 +71,24 @@ export default async function ({ params }) {
         >
           <h1 className='text-4xl font-bold mt-2'>{owner}</h1>
         </a>
-        <h2>{designs.length} {designs.length === 1 ? 'design' : 'designs'}</h2>
+        {user.name && <p className='text-base-content/70'>{user.name}</p>}
+        {user.bio && <p className='text-sm text-center mt-1'>{user.bio}</p>}
+        <h2 className='mt-2'>
+          {totalCount} {totalCount === 1 ? 'design' : 'designs'}
+        </h2>
       </div>
-      <div className='flex-1'>
-        <DesignResults designs={designs} />
-      </div>
-      {/* <Pagination
-        pageNumber={pageNumber}
-        nextPageNumber={nextPageNumber}
-        prevPageNumber={prevPageNumber}
-      /> */}
+
+      {designs.length === 0
+        ? (
+          <div className='mx-auto text-center mt-8 max-w-lg'>
+            <p>No public designs found for this GitHub user.</p>
+          </div>
+          )
+        : (
+          <div className='flex-1'>
+            <DesignResults designs={designs} />
+          </div>
+          )}
     </div>
   )
 }

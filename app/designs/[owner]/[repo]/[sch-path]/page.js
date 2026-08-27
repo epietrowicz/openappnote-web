@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import { getKicadProjectName } from '@/lib/util'
+import { getPublicApiUrl } from '@/lib/public-api-url'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -29,7 +30,7 @@ export async function generateMetadata ({ params }) {
 }
 
 async function fetchBom (rootSchUrl, remainingSchUrls) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}/github/bom`, {
+  const res = await fetch(`${getPublicApiUrl()}/github/bom`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

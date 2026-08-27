@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { getPublicApiUrl } from '@/lib/public-api-url'
 import { fetchGithubFile, formatUploadError, uploadLocalFile } from '@/lib/pcb-viewer-import'
 import PcbViewerDisplay from './pcb-viewer-display'
 import PcbViewerUploadForm from './pcb-viewer-upload-form'
@@ -17,7 +18,7 @@ export default function PcbViewerUpload () {
   const dragCounter = useRef(0)
   const isUploading = useRef(false)
 
-  const uploadBaseUrl = process.env.NEXT_PUBLIC_UPLOAD_BASE_URL
+  const uploadBaseUrl = getPublicApiUrl()
 
   function resetViewer () {
     setFileContent(null)

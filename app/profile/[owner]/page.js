@@ -1,6 +1,6 @@
 import DesignResults from '@/app/ui/design-results'
+import { searchKicadSchematics } from '@/lib/github-search'
 import { octokit } from '@/lib/gh'
-import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
@@ -18,16 +18,8 @@ async function getGithubUser (owner) {
 
 async function getOwnerDesigns (owner, pageNum) {
   try {
-    const response = await octokit.search.code({
-      q: `user:${owner} extension:kicad_sch`,
-      per_page: NUM_RESULTS_PER_PAGE,
-      page: pageNum
-    })
-
-    return {
-      designs: response.data.items,
-      totalCount: response.data.total_count
-    }
+    const { results, totalHits } = await searchKicadSchematics(`user:${owner}`, pageNum)
+    return { designs: results, totalCount: totalHits }
   } catch (error) {
     console.error('Error fetching GitHub designs:', error)
     return { designs: [], totalCount: 0 }

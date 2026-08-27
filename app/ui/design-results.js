@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react'
-import { getPublicBaseUrl } from '@/lib/public-api-url'
+import { getRepository } from '@/lib/github-repository'
 import Link from 'next/link'
 import { GhAvatar } from './gh-avatar'
 import { notFound } from 'next/navigation'
@@ -9,17 +9,16 @@ async function getParts (designId) {
 }
 
 async function fetchRepository (owner, repo) {
-  const res = await fetch(`${getPublicBaseUrl()}/api/fetch-repository?owner=${owner}&repo=${repo}`)
-  if (!res.ok) {
-    return notFound() // Show 404 if API fails
+  try {
+    return await getRepository(owner, repo)
+  } catch {
+    return notFound()
   }
-  const data = await res.json()
-  return data
 }
 
 async function DesignEntry ({ entry }) {
   const parts = await getParts(entry.id)
-  const { result: repository } = await fetchRepository(entry.repository.owner.login, entry.repository.name)
+  const repository = await fetchRepository(entry.repository.owner.login, entry.repository.name)
   const designName = entry.repository.name.replaceAll('-', ' ').replaceAll('_', ' ')
   const path = entry.path
   // Get the root .kicad_pro file name

@@ -1,11 +1,12 @@
 import { ExternalLink } from 'lucide-react'
 import { getKicadProjectName } from '@/lib/util'
-import { getPublicApiUrl, getPublicBaseUrl } from '@/lib/public-api-url'
+import { getPublicApiUrl } from '@/lib/public-api-url'
+import { getRepository } from '@/lib/github-repository'
+import { getProjectFiles } from '@/lib/github-tree'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Papa from 'papaparse'
-import { octokit } from '@/lib/gh'
 import KicanvasRemoteContent from '@/app/ui/kicanvas-remote-content'
 import BomView from '@/app/ui/bom-view'
 
@@ -16,7 +17,7 @@ export async function generateMetadata ({ params }) {
   const { owner, repo } = await params
 
   try {
-    const { data: repository } = await octokit.rest.repos.get({ owner, repo })
+    const repository = await getRepository(owner, repo)
     return {
       title: repository.description
         ? repository.description
@@ -47,21 +48,24 @@ async function fetchBom (rootSchUrl, remainingSchUrls) {
 }
 
 async function fetchDesign (owner, repo) {
-  const res = await fetch(`${getPublicBaseUrl()}/api/fetch-repository?owner=${owner}&repo=${repo}`)
-  if (!res.ok) {
+  try {
+    return await getRepository(owner, repo)
+  } catch {
     return notFound()
   }
-
-  return await res.json()
 }
 
 async function fetchTree (repository, path) {
-  const res = await fetch(`${getPublicBaseUrl()}/api/fetch-tree?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&ref=${repository.default_branch}`)
-  if (!res.ok) {
+  try {
+    return await getProjectFiles(
+      repository.owner.login,
+      repository.name,
+      path,
+      repository.default_branch
+    )
+  } catch {
     return notFound()
   }
-
-  return await res.json()
 }
 
 export default async function ({ params }) {
@@ -74,8 +78,8 @@ export default async function ({ params }) {
     ? path.split('/').slice(0, -1).join('/')
     : ''
 
-  const { result: repository } = await fetchDesign(owner, repo)
-  const { result: projectFiles } = await fetchTree(repository, pathPartsString)
+  const repository = await fetchDesign(owner, repo)
+  const projectFiles = await fetchTree(repository, pathPartsString)
   const projectName = getKicadProjectName(projectFiles)
 
   const rawProjectUrls = projectFiles.map(file =>

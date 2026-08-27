@@ -1,20 +1,26 @@
 'use client'
 
-import Script from 'next/script'
+import { useCallback } from 'react'
+import KicanvasEmbedShell from './kicanvas-embed-shell'
+import { mountInlineEmbed, mountSingleSrcEmbed } from './kicanvas-dom'
 
-const KicanvasContent = ({ fileUrls }) => {
+export default function KicanvasContent ({
+  fileUrls,
+  fileContent,
+  fileName = 'board'
+}) {
+  const onMount = useCallback((container) => {
+    if (fileContent != null) {
+      mountInlineEmbed(container, { fileContent, fileName })
+    } else if (fileUrls?.[0]) {
+      mountSingleSrcEmbed(container, fileUrls[0])
+    }
+  }, [fileContent, fileName, fileUrls])
+
   return (
-    <>
-      <Script
-        src='/kicanvas.js'
-        strategy='afterInteractive'
-        onLoad={() => {
-          console.log('Loaded', window.kc)
-        }}
-      />
-      <kicanvas-embed theme='' src={fileUrls[0]} controls='full' type='board' />
-    </>
+    <KicanvasEmbedShell
+      onMount={onMount}
+      mountDeps={[fileContent, fileName, fileUrls]}
+    />
   )
 }
-
-export default KicanvasContent

@@ -1,16 +1,16 @@
 import { UserCircleIcon } from 'lucide-react'
 import Image from 'next/image'
 
-export function GhAvatar ({ design, height = 20, width = 20 }) {
+export function GhAvatar ({ avatarUrl, height = 25, width = 25 }) {
   return (
     <>
-      {design?.repository?.avatar_url == null
+      {avatarUrl == null
         ? (<UserCircleIcon style={{ height, width }} />)
         : (<Image
             unoptimized
             className='rounded-full'
-            alt={`Avatar for ${design.owner}`}
-            src={design.repository.avatar_url}
+            alt='Github avatar'
+            src={avatarUrl}
             width={width}
             height={height}
            />)}

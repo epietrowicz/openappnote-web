@@ -29,7 +29,7 @@ async function DesignEntry ({ entry }) {
   return (
     <DesignEntryLink
       href={`/designs/${entry.repository.owner.login}/${entry.repository.name}/${encodeURIComponent(path)}`}
-      className='card bg-base-100 w-full shadow-sm'
+      className='card bg-base-100 w-full shadow-sm hover:shadow-md transition-shadow duration-200'
     >
       <div className='card-body'>
         <h2 className='card-title capitalize'>

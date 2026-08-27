@@ -21,6 +21,7 @@ async function fetchSearchResults (query, page) {
   // })
   const res = await fetch(`${getPublicBaseUrl()}/api/search?query=${query}&page=${page}`)
   if (!res.ok) {
+    console.log(await res.json())
     console.error('Error fetching search results:', res.statusText)
     return notFound() // Show 404 if API fails
   }

@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react'
 import { getRepository } from '@/lib/github-repository'
-import Link from 'next/link'
+import DesignEntryLink from '@/app/ui/design-entry-link'
 import { GhAvatar } from './gh-avatar'
 import { notFound } from 'next/navigation'
 
@@ -27,7 +27,7 @@ async function DesignEntry ({ entry }) {
   // then filter by the .kicad_sch extension at the same level as the root .kicad_pro file
   // to provide to kicanvas
   return (
-    <Link
+    <DesignEntryLink
       href={`/designs/${entry.repository.owner.login}/${entry.repository.name}/${encodeURIComponent(path)}`}
       className='card bg-base-100 w-full shadow-sm'
     >
@@ -60,7 +60,7 @@ async function DesignEntry ({ entry }) {
           </div>
         </div>
       </div>
-    </Link>
+    </DesignEntryLink>
   )
 }
 

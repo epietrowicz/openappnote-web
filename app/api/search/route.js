@@ -13,13 +13,11 @@ export async function GET (request) {
 
   try {
     const response = await octokit.search.code({
-      // q: `${query} in:file extension:kicad_sch`,
-      q: 'extension:kicad_pcb',
+      q: `${query} in:file extension:kicad_sch`,
       per_page: NUM_RESULTS_PER_PAGE,
       page
     })
 
-    console.log(response)
     return NextResponse.json({ results: response.data.items, totalHits: response.data.total_count })
   } catch (error) {
     console.error('Error fetching search results:', error)

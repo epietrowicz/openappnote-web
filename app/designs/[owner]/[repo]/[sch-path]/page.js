@@ -1,96 +1,72 @@
-import { supabaseService } from '@/lib/db'
-import { Download, ExternalLink } from 'lucide-react'
-import BoardView from '@/app/ui/board-view'
-import { sortParts } from '@/lib/util'
+import { ExternalLink } from 'lucide-react'
+import { getKicadProjectName } from '@/lib/util'
 import { GhAvatar } from '@/app/ui/gh-avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Papa from 'papaparse'
-// import KicanvasPreview from '@/app/ui/kicanvas-preview'
-// import StepViewer from '@/app/ui/step-viewer'
 import { octokit } from '@/lib/gh'
-// import KicanvasContainer from '@/app/ui/kicanvas-container'
+import KicanvasRemoteContent from '@/app/ui/kicanvas-remote-content'
+import BomView from '@/app/ui/bom-view'
 
 export const revalidate = 86400
-
-// We'll prerender only the params from `generateStaticParams` at build time.
-// If a request comes in for a path that hasn't been generated,
-// Next.js will server-render the page on-demand.
-export const dynamicParams = true // or false, to 404 on unknown paths
-
-// Good resource: https://supabase.com/blog/fetching-and-caching-supabase-data-in-next-js-server-components
-// export async function generateStaticParams () {
-//   // const { data: designData, error: designError } = await supabaseService
-//   //   .from('design')
-//   //   .select('slug')
-
-//   // if (designError) {
-//   //   console.log(designError)
-//   //   return
-//   // }
-//   // return designData
-// }
+export const dynamicParams = true
 
 export async function generateMetadata ({ params }) {
-  // const slug = (await params).slug
-  // const design = await getDesignEntry(slug)
+  const { owner, repo } = await params
 
-  // return {
-  //   title: design?.repo_description == null
-  //     ? `${design.name} reference design`
-  //     : design.repo_description
-  // }
+  try {
+    const { data: repository } = await octokit.rest.repos.get({ owner, repo })
+    return {
+      title: repository.description
+        ? repository.description
+        : `${repository.name} reference design`,
+      description: repository.description ??
+        `KiCad reference design from ${owner}/${repo} on GitHub`
+    }
+  } catch {
+    return { title: `${repo} reference design` }
+  }
 }
 
-async function fetchBom (schUrls) {
-  const parts = []
-
-  for (const url of schUrls) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}/bom`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ url })
-    })
-    if (!res.ok) continue
-
-    const csv = await res.text()
-    const { data } = Papa.parse(csv, { header: true, skipEmptyLines: true })
-    parts.push(...data)
+async function fetchBom (rootSchUrl, remainingSchUrls) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}/github/bom`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ rootUrl: rootSchUrl, urls: remainingSchUrls })
+  })
+  if (!res.ok) {
+    return notFound()
   }
 
+  const csv = await res.text()
+  const { data: parts } = Papa.parse(csv, { header: true, skipEmptyLines: true })
   return parts
 }
 
 async function fetchDesign (owner, repo) {
-  // const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/search?query=${query}&page=${page}`, {
-  //   next: { revalidate: 86400 }
-  // })
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-repository?owner=${owner}&repo=${repo}`)
   if (!res.ok) {
-    return notFound() // Show 404 if API fails
+    return notFound()
   }
 
-  const data = await res.json()
-  return data
+  return await res.json()
 }
 
 async function fetchTree (repository, path) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-tree?owner=${repository.owner.login}&repo=${repository.name}&path=${path}&ref=${repository.default_branch}`)
   if (!res.ok) {
-    return notFound() // Show 404 if API fails
+    return notFound()
   }
-  const data = await res.json()
-  return data
+
+  return await res.json()
 }
 
 export default async function ({ params }) {
   const { owner, repo } = await params
   const path = decodeURIComponent((await params)['sch-path'])
-  console.log(path)
 
-  // I have no idea why this is happening, but it's related to kicanvas
   if (path === '$$:0:$$') return <></>
 
   const pathPartsString = path.includes('/')
@@ -99,15 +75,21 @@ export default async function ({ params }) {
 
   const { result: repository } = await fetchDesign(owner, repo)
   const { result: projectFiles } = await fetchTree(repository, pathPartsString)
+  const projectName = getKicadProjectName(projectFiles)
 
   const rawProjectUrls = projectFiles.map(file =>
-      `https://raw.githubusercontent.com/${repository.full_name}/${repository.default_branch}/${encodeURIComponent(file.path)}`
+    `https://raw.githubusercontent.com/${repository.full_name}/${repository.default_branch}/${file.path}`
   )
-  const { result: parts } = await fetchBom(rawProjectUrls.filter(url => url.endsWith('.kicad_sch')))
 
   const rootUrl = `${repository.html_url}/tree/${repository.default_branch}/${pathPartsString}`
-
-  // return <div>Hello</div>
+  const schematicFiles = rawProjectUrls.filter(url => url.endsWith('.kicad_sch'))
+  const rootSchUrl = projectName
+    ? schematicFiles.find(url => url.endsWith(`${projectName}.kicad_sch`))
+    : null
+  const parts = rootSchUrl
+    ? await fetchBom(rootSchUrl, schematicFiles)
+    : []
+  const pcbFiles = rawProjectUrls.filter(url => url.endsWith('.kicad_pcb'))
 
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>
@@ -133,47 +115,33 @@ export default async function ({ params }) {
           className='btn btn-primary'
         >
           View on GitHub
-          <img height='25' width='25' src='https://cdn.simpleicons.org/github/ffffff' />
+          <img height='25' width='25' src='https://cdn.simpleicons.org/github/ffffff' alt='' />
         </a>
       </div>
 
       <h2 className='text-lg font-bold capitalize mt-4 mb-2'>Components ({parts.length})</h2>
       <div className='max-h-56 overflow-y-auto'>
-        <table className='table-xs md:table-sm table-pin-rows table w-full'>
-          <thead>
-            <tr>
-              <th className='bg-base-300'>Reference</th>
-              <th className='bg-base-300'>Value</th>
-              <th className='bg-base-300'>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {parts.map((part, index) => (
-              <tr key={part.Reference + part.Value + index}>
-                <td>{part.Reference}</td>
-                <td>{part.Value}</td>
-                <td>{part.Description}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <BomView data={parts} />
       </div>
 
-      <div className='flex items-center justify-between mt-6 mb-2'>
+      <div className='flex items-center justify-between mt-6 mb-4'>
         <h2 className='text-lg font-bold capitalize'>{repository.name} schematic</h2>
         <a
           href={`https://kicanvas.org/?github=${rootUrl}`}
           target='_blank'
           rel='noopener noreferrer'
-          className='btn btn-primary'
+          className='btn btn-outline'
         >
           Full page viewer
           <ExternalLink className='h-5 w-5' />
         </a>
       </div>
-      {/* <KicanvasContent
-        fileUrls={rawProjectUrls.filter(url => !url.endsWith('.kicad_pro'))}
-      /> */}
+      <KicanvasRemoteContent fileUrls={schematicFiles} />
+
+      <div className='flex items-center justify-between mt-6 mb-2'>
+        <h2 className='text-lg font-bold capitalize'>{repository.name} board</h2>
+      </div>
+      <KicanvasRemoteContent fileUrls={pcbFiles} />
     </div>
   )
 }

@@ -21,8 +21,11 @@ async function DesignEntry ({ entry }) {
   const { result: repository } = await fetchRepository(entry.repository.owner.login, entry.repository.name)
   const designName = entry.repository.name.replaceAll('-', ' ').replaceAll('_', ' ')
   const path = entry.path
-  console.log(path)
-
+  // Get the root .kicad_pro file name
+  // use that to identify the root .kicad_sch file
+  // use the root .kicad_sch file to generate the BOM
+  // then filter by the .kicad_sch extension at the same level as the root .kicad_pro file
+  // to provide to kicanvas
   return (
     <Link
       href={`/designs/${entry.repository.owner.login}/${entry.repository.name}/${encodeURIComponent(path)}`}

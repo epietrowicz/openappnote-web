@@ -1,16 +1,15 @@
 import DesignResults from '@/app/ui/design-results'
 import { searchKicadSchematics } from '@/lib/github-search'
-import { octokit } from '@/lib/gh'
+import { getGithubUser } from '@/lib/github-user'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 export const revalidate = 86400
 export const dynamicParams = true
 
-async function getGithubUser (owner) {
+async function fetchGithubUser (owner) {
   try {
-    const { data } = await octokit.users.getByUsername({ username: owner })
-    return data
+    return await getGithubUser(owner)
   } catch {
     return null
   }
@@ -28,7 +27,7 @@ async function getOwnerDesigns (owner, pageNum) {
 
 export async function generateMetadata ({ params }) {
   const owner = (await params).owner
-  const user = await getGithubUser(owner)
+  const user = await fetchGithubUser(owner)
 
   return {
     title: user?.name ? `${user.name} (@${owner})` : owner,
@@ -40,7 +39,7 @@ export default async function ProfilePage ({ params }) {
   const owner = (await params).owner
   const pageNumber = 1
 
-  const user = await getGithubUser(owner)
+  const user = await fetchGithubUser(owner)
   if (!user) notFound()
 
   const { designs, totalCount } = await getOwnerDesigns(owner, pageNumber)

@@ -2,23 +2,13 @@ import { Star } from 'lucide-react'
 import { getRepository } from '@/lib/github-repository'
 import DesignEntryLink from '@/app/ui/design-entry-link'
 import { GhAvatar } from './gh-avatar'
-import { notFound } from 'next/navigation'
 
 async function getParts (designId) {
   return []
 }
 
-async function fetchRepository (owner, repo) {
-  try {
-    return await getRepository(owner, repo)
-  } catch {
-    return notFound()
-  }
-}
-
-async function DesignEntry ({ entry }) {
+async function DesignEntry ({ entry, repository }) {
   const parts = await getParts(entry.id)
-  const repository = await fetchRepository(entry.repository.owner.login, entry.repository.name)
   const designName = entry.repository.name.replaceAll('-', ' ').replaceAll('_', ' ')
   const path = entry.path
   // Get the root .kicad_pro file name
@@ -64,18 +54,60 @@ async function DesignEntry ({ entry }) {
   )
 }
 
-export default function DesignResults ({ designs }) {
+function repositoryKey (owner, repo) {
+  return `${owner}/${repo}`
+}
+
+async function fetchRepositoriesByKey (designs) {
+  const uniqueRepos = [...new Map(
+    designs.map(({ repository }) => [repositoryKey(repository.owner.login, repository.name), repository])
+  ).values()]
+
+  const entries = await Promise.all(
+    uniqueRepos.map(async ({ owner, name }) => {
+      try {
+        const repository = await getRepository(owner.login, name)
+        return [repositoryKey(owner.login, name), repository]
+      } catch (error) {
+        console.error(`Error fetching repository ${owner.login}/${name}:`, error.status ?? error)
+        return [repositoryKey(owner.login, name), null]
+      }
+    })
+  )
+
+  return new Map(entries)
+}
+
+function NoDesignsFound () {
+  return (
+    <div className='text-left mt-8'>
+      <h2>No designs found</h2>
+    </div>
+  )
+}
+
+export default async function DesignResults ({ designs }) {
   if (designs.length === 0) {
-    return (
-      <div className='text-left mt-8'>
-        <h2>No designs found</h2>
-      </div>
-    )
+    return <NoDesignsFound />
   }
+
+  const repositoriesByKey = await fetchRepositoriesByKey(designs)
+
+  const entriesWithRepository = designs
+    .map(entry => ({
+      entry,
+      repository: repositoriesByKey.get(repositoryKey(entry.repository.owner.login, entry.repository.name))
+    }))
+    .filter(({ repository }) => repository != null)
+
+  if (entriesWithRepository.length === 0) {
+    return <NoDesignsFound />
+  }
+
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto px-16 mt-4'>
-      {designs.map(v => (
-        <DesignEntry key={v.sha} entry={v} />
+      {entriesWithRepository.map(({ entry, repository }) => (
+        <DesignEntry key={entry.sha} entry={entry} repository={repository} />
       ))}
     </div>
   )

@@ -4,6 +4,10 @@ import { getPublicApiUrl } from '@/lib/public-api-url'
 import { getRepository } from '@/lib/github-repository'
 import { getProjectFiles } from '@/lib/github-tree'
 import { GhAvatar } from '@/app/ui/gh-avatar'
+import Breadcrumbs from '@/app/ui/breadcrumbs'
+import JsonLd from '@/app/ui/json-ld'
+import { HOME_CRUMB, breadcrumbListSchema } from '@/lib/breadcrumb-schema'
+import { SITE_URL } from '@/lib/site-url'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Papa from 'papaparse'
@@ -13,20 +17,38 @@ import BomView from '@/app/ui/bom-view'
 export const revalidate = 86400
 export const dynamicParams = true
 
+function schematicLabel (schPath) {
+  const decoded = decodeURIComponent(schPath)
+  const basename = decoded.split('/').pop()
+  return basename.replace(/\.kicad_sch$/, '')
+}
+
 export async function generateMetadata ({ params }) {
   const { owner, repo } = await params
+  const schPath = (await params)['sch-path']
+  const label = schematicLabel(schPath)
+  const canonicalPath = `/designs/${owner}/${repo}/${schPath}`
 
   try {
     const repository = await getRepository(owner, repo)
+    const title = repository.description
+      ? `${label} — ${repository.description}`
+      : `${label} reference design (${repository.name})`
+    const description = repository.description ??
+      `KiCad reference design from ${owner}/${repo} on GitHub`
+
     return {
-      title: repository.description
-        ? repository.description
-        : `${repository.name} reference design`,
-      description: repository.description ??
-        `KiCad reference design from ${owner}/${repo} on GitHub`
+      title,
+      description,
+      alternates: { canonical: canonicalPath },
+      openGraph: { title, description },
+      twitter: { title, description }
     }
   } catch {
-    return { title: `${repo} reference design` }
+    return {
+      title: `${label} reference design`,
+      alternates: { canonical: canonicalPath }
+    }
   }
 }
 
@@ -70,7 +92,8 @@ async function fetchTree (repository, path) {
 
 export default async function ({ params }) {
   const { owner, repo } = await params
-  const path = decodeURIComponent((await params)['sch-path'])
+  const schPath = (await params)['sch-path']
+  const path = decodeURIComponent(schPath)
 
   if (path === '$$:0:$$') return <></>
 
@@ -96,13 +119,43 @@ export default async function ({ params }) {
     : []
   const pcbFiles = rawProjectUrls.filter(url => url.endsWith('.kicad_pcb'))
 
+  const designHref = `/designs/${owner}/${repo}/${schPath}`
+
+  const breadcrumbItems = [
+    HOME_CRUMB,
+    { label: `@${repository.owner.login}`, href: `/profile/${repository.owner.login}` },
+    { label: repository.name, href: designHref }
+  ]
+
+  const softwareSourceCodeSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareSourceCode',
+    name: repository.name,
+    description: repository.description ?? `KiCad reference design from ${owner}/${repo} on GitHub`,
+    codeRepository: repository.html_url,
+    url: `${SITE_URL}${designHref}`,
+    author: {
+      '@type': 'Person',
+      name: repository.owner.login,
+      url: `https://github.com/${repository.owner.login}`
+    }
+  }
+
   return (
     <div className='w-full max-w-5xl mx-auto px-4'>
+      <JsonLd data={breadcrumbListSchema(breadcrumbItems)} />
+      <JsonLd data={softwareSourceCodeSchema} />
+      <Breadcrumbs items={breadcrumbItems} />
       <div className='flex items-start justify-between mt-6'>
         <div>
           <div className='flex items-center space-x-2'>
             <Link href={`/profile/${repository.owner.login}`}>
-              <GhAvatar avatarUrl={repository.owner.avatar_url} height={37} width={37} />
+              <GhAvatar
+                avatarUrl={repository.owner.avatar_url}
+                alt={`Avatar for ${repository.owner.login}`}
+                height={37}
+                width={37}
+              />
             </Link>
             <div>
               <h1 className='text-3xl font-bold capitalize'>{repository.name}</h1>

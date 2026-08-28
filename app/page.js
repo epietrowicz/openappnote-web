@@ -1,5 +1,8 @@
 import Search from './ui/search'
 import Link from 'next/link'
+import { CURATED_TAGS } from '@/lib/tags'
+
+const POPULAR_TAGS = CURATED_TAGS.slice(0, 5)
 
 export default async function Home () {
   return (
@@ -20,13 +23,14 @@ export default async function Home () {
 
           </div>
         </div>
-        <div className='mt-2 flex items-center justify-center space-x-4'>
-          <p className='text-gray-500'>Popular searches</p>
-          <SearchBadge searchUrl='/tags/1/arduino/' title='Arduino' />
-          <SearchBadge searchUrl='/tags/1/raspberry-pi/' title='Raspberry Pi HAT' />
-          <SearchBadge searchUrl='/tags/1/esp32/' title='ESP32' />
-          <SearchBadge searchUrl='/tags/1/stm32/' title='STM32' />
-          <SearchBadge searchUrl='/tags/1/usb-c/' title='USB-C' />
+        <div className='mt-2 flex flex-wrap items-center justify-center gap-2'>
+          <p className='text-gray-500 mr-2'>Popular searches</p>
+          {POPULAR_TAGS.map(tag => (
+            <SearchBadge key={tag} searchUrl={`/tags/1/${tag}`} title={tag.replace(/-/g, ' ')} />
+          ))}
+          <Link href='/tags' className='badge badge-outline badge-sm'>
+            Browse all tags
+          </Link>
         </div>
       </div>
     </>

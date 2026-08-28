@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react'
+import Link from 'next/link'
 import { getRepository } from '@/lib/github-repository'
 import DesignEntryLink from '@/app/ui/design-entry-link'
 import { GhAvatar } from './gh-avatar'
@@ -11,17 +12,20 @@ async function DesignEntry ({ entry, repository }) {
   const parts = await getParts(entry.id)
   const designName = entry.repository.name.replaceAll('-', ' ').replaceAll('_', ' ')
   const path = entry.path
+  const owner = entry.repository.owner.login
   // Get the root .kicad_pro file name
   // use that to identify the root .kicad_sch file
   // use the root .kicad_sch file to generate the BOM
   // then filter by the .kicad_sch extension at the same level as the root .kicad_pro file
   // to provide to kicanvas
   return (
-    <DesignEntryLink
-      href={`/designs/${entry.repository.owner.login}/${entry.repository.name}/${encodeURIComponent(path)}`}
-      className='card bg-base-100 w-full shadow-sm hover:shadow-md transition-shadow duration-200'
-    >
-      <div className='card-body'>
+    <div className='card bg-base-100 w-full shadow-sm hover:shadow-md transition-shadow duration-200 relative'>
+      <DesignEntryLink
+        href={`/designs/${owner}/${entry.repository.name}/${encodeURIComponent(path)}`}
+        className='rounded-2xl'
+        ariaLabel={designName}
+      />
+      <div className='card-body relative z-10 pointer-events-none'>
         <h2 className='card-title capitalize'>
           {designName}
         </h2>
@@ -40,17 +44,20 @@ async function DesignEntry ({ entry, repository }) {
         </div>
 
         <div className='flex items-center justify-start space-x-4 mt-2'>
-          <div className='flex items-center space-x-2'>
-            <GhAvatar avatarUrl={repository.owner.avatar_url} />
-            <p className='text-sm'>{entry.repository.owner.login}</p>
-          </div>
+          <Link
+            href={`/profile/${owner}`}
+            className='flex items-center space-x-2 pointer-events-auto hover:underline'
+          >
+            <GhAvatar avatarUrl={repository.owner.avatar_url} alt={`Avatar for ${owner}`} />
+            <p className='text-sm'>{owner}</p>
+          </Link>
           <div className='flex items-center space-x-1'>
             <Star className='h-4 w-4 ' />
             <p className='text-sm'>{repository.stargazers_count ?? 0}</p>
           </div>
         </div>
       </div>
-    </DesignEntryLink>
+    </div>
   )
 }
 

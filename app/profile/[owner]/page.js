@@ -1,6 +1,10 @@
 import DesignResults from '@/app/ui/design-results'
 import { searchKicadSchematics } from '@/lib/github-search'
 import { getGithubUser } from '@/lib/github-user'
+import Breadcrumbs from '@/app/ui/breadcrumbs'
+import JsonLd from '@/app/ui/json-ld'
+import { HOME_CRUMB, breadcrumbListSchema } from '@/lib/breadcrumb-schema'
+import { SITE_URL } from '@/lib/site-url'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
@@ -29,9 +33,15 @@ export async function generateMetadata ({ params }) {
   const owner = (await params).owner
   const user = await fetchGithubUser(owner)
 
+  const title = user?.name ? `${user.name} (@${owner})` : owner
+  const description = user?.bio ?? `KiCad reference designs by ${owner} on GitHub`
+
   return {
-    title: user?.name ? `${user.name} (@${owner})` : owner,
-    description: user?.bio ?? `KiCad reference designs by ${owner} on GitHub`
+    title,
+    description,
+    alternates: { canonical: `/profile/${owner}` },
+    openGraph: { title, description },
+    twitter: { title, description }
   }
 }
 
@@ -43,10 +53,24 @@ export default async function ProfilePage ({ params }) {
   if (!user) notFound()
 
   const { designs, totalCount } = await getOwnerDesigns(owner, pageNumber)
+  const breadcrumbItems = [HOME_CRUMB, { label: `@${owner}`, href: `/profile/${owner}` }]
+
+  const personSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: user.name ?? owner,
+    alternateName: owner,
+    url: `https://github.com/${owner}`,
+    image: user.avatar_url,
+    mainEntityOfPage: `${SITE_URL}/profile/${owner}`
+  }
 
   return (
     <div>
+      <JsonLd data={breadcrumbListSchema(breadcrumbItems)} />
+      <JsonLd data={personSchema} />
       <div className='mx-auto flex flex-col items-center justify-center mt-6 max-w-lg'>
+        <Breadcrumbs items={breadcrumbItems} />
         <Image
           unoptimized
           className='rounded-full'

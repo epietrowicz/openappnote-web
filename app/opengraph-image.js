@@ -3,6 +3,7 @@ import { OG_IMAGE_SIZE, ogLayout } from '@/lib/og-image'
 
 export const size = OG_IMAGE_SIZE
 export const contentType = 'image/png'
+export const revalidate = 86400
 
 export default async function Image () {
   return new ImageResponse(

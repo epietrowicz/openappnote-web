@@ -4,6 +4,7 @@ import { getGithubUser } from '@/lib/github-user'
 
 export const size = OG_IMAGE_SIZE
 export const contentType = 'image/png'
+export const revalidate = 86400
 
 export default async function Image ({ params }) {
   const { owner } = await params

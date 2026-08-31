@@ -4,6 +4,7 @@ import { getRepository } from '@/lib/github-repository'
 
 export const size = OG_IMAGE_SIZE
 export const contentType = 'image/png'
+export const revalidate = 86400
 
 export default async function Image ({ params }) {
   const { owner, repo } = await params

@@ -4,6 +4,7 @@ import { searchDesigns } from '@/lib/design-search'
 
 export const size = OG_IMAGE_SIZE
 export const contentType = 'image/png'
+export const revalidate = 86400
 
 export default async function Image ({ params }) {
   const { tag } = await params

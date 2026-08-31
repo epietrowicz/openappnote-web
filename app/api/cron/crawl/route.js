@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
+import { createMeilisearchClient } from '@/lib/meilisearch'
 import { ensureIndexes } from '@/lib/meilisearch-schema'
 import { runChannelACrawl } from '@/lib/crawler/run-crawl-code-search'
 
 export const maxDuration = 300
 
 const DEFAULT_BUDGET_MS = 270_000
+const VALID_TARGETS = ['local', 'production']
 
 export async function GET (request) {
   if (!process.env.CRON_SECRET) {
@@ -16,13 +18,21 @@ export async function GET (request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const requestedBudgetMs = Number(new URL(request.url).searchParams.get('budgetMs'))
+  const url = new URL(request.url)
+
+  const requestedBudgetMs = Number(url.searchParams.get('budgetMs'))
   const budgetMs = Number.isFinite(requestedBudgetMs) && requestedBudgetMs > 0
     ? requestedBudgetMs
     : DEFAULT_BUDGET_MS
 
-  await ensureIndexes()
-  const summary = await runChannelACrawl({ budgetMs })
+  const requestedTarget = url.searchParams.get('target')
+  if (requestedTarget && !VALID_TARGETS.includes(requestedTarget)) {
+    return NextResponse.json({ error: `target must be one of: ${VALID_TARGETS.join(', ')}` }, { status: 400 })
+  }
+  const client = createMeilisearchClient(requestedTarget)
 
-  return NextResponse.json(summary)
+  await ensureIndexes(client)
+  const summary = await runChannelACrawl({ budgetMs, client })
+
+  return NextResponse.json({ ...summary, target: requestedTarget ?? 'auto' })
 }

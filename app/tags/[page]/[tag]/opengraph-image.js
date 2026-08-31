@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { OG_IMAGE_SIZE, ogLayout } from '@/lib/og-image'
-import { searchKicadSchematics } from '@/lib/github-search'
+import { searchDesigns } from '@/lib/design-search'
 
 export const size = OG_IMAGE_SIZE
 export const contentType = 'image/png'
@@ -11,7 +11,7 @@ export default async function Image ({ params }) {
 
   let totalHits = 0
   try {
-    ({ totalHits } = await searchKicadSchematics(tag, 1))
+    ({ totalHits } = await searchDesigns(tag, 1))
   } catch {
     totalHits = 0
   }

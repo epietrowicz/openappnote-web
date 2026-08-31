@@ -1,17 +1,17 @@
 import Link from 'next/link'
 
-export default async function ({ parts }) {
+export default function PartTags ({ parts }) {
   return (
-    <div className='flex items-center space-x-2'>
+    <>
       {parts.map(part => (
         <Link
-          href={`/tags/1/${part.part_number}`}
-          key={part.id}
-          className='badge badge-soft badge-primary badge-sm'
+          href={`/tags/1/${part.partNumber}`}
+          key={part.referenceDesignator}
+          className='badge badge-soft badge-primary badge-sm flex-none mt-2'
         >
-          <h4>{part.part_number}</h4>
+          <h4 className='flex-none'>{part.partNumber}</h4>
         </Link>
       ))}
-    </div>
+    </>
   )
 }

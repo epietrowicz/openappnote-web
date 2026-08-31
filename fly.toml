@@ -1,0 +1,26 @@
+app = "openappnote-meilisearch"
+primary_region = "ord"
+
+[build]
+  image = "getmeili/meilisearch:latest"
+
+[env]
+  MEILI_ENV = "production"
+  MEILI_NO_ANALYTICS = "true"
+  # MEILI_MASTER_KEY is intentionally not set here - this file is committed, and
+  # [env] values are plaintext. Set it with:
+  #   fly secrets set MEILI_MASTER_KEY=<value> --app openappnote-meilisearch
+
+[http_service]
+  internal_port = 7700
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+
+[[mounts]]
+  source = "meilisearch_data"
+  destination = "/meili_data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

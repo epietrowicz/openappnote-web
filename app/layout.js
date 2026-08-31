@@ -32,7 +32,7 @@ export default function RootLayout ({ children }) {
         <Suspense>
           <Navbar />
         </Suspense>
-        <div className='max-w-7xl flex flex-col flex-1 mx-auto w-full'>
+        <div className='max-w-7xl flex flex-col flex-1 mx-auto w-full px-10'>
           {children}
         </div>
         <footer className='footer footer-center py-4'>

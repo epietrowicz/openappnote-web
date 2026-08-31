@@ -1,27 +1,20 @@
 import { Star } from 'lucide-react'
 import Link from 'next/link'
-import { getRepository } from '@/lib/github-repository'
 import DesignEntryLink from '@/app/ui/design-entry-link'
+import PartTags from '@/app/ui/part-tags'
+import { NUM_PARTS_TO_TAG } from '@/lib/util'
 import { GhAvatar } from './gh-avatar'
 
-async function getParts (designId) {
-  return []
-}
+function DesignEntry ({ entry }) {
+  const repository = entry.repository
+  const owner = repository.owner.login
+  const designName = entry.projectName.replaceAll('-', ' ').replaceAll('_', ' ')
+  const parts = entry.parts.slice(0, NUM_PARTS_TO_TAG)
 
-async function DesignEntry ({ entry, repository }) {
-  const parts = await getParts(entry.id)
-  const designName = entry.repository.name.replaceAll('-', ' ').replaceAll('_', ' ')
-  const path = entry.path
-  const owner = entry.repository.owner.login
-  // Get the root .kicad_pro file name
-  // use that to identify the root .kicad_sch file
-  // use the root .kicad_sch file to generate the BOM
-  // then filter by the .kicad_sch extension at the same level as the root .kicad_pro file
-  // to provide to kicanvas
   return (
     <div className='card bg-base-100 w-full shadow-sm hover:shadow-md transition-shadow duration-200 relative'>
       <DesignEntryLink
-        href={`/designs/${owner}/${entry.repository.name}/${encodeURIComponent(path)}`}
+        href={`/designs/${owner}/${repository.name}/${encodeURIComponent(entry.rootSchPath)}`}
         className='rounded-2xl'
         ariaLabel={designName}
       />
@@ -30,17 +23,11 @@ async function DesignEntry ({ entry, repository }) {
           {designName}
         </h2>
         <p>
-          {entry.repository.description}
+          {repository.description}
         </p>
 
-        <div className='flex items-start justify-start space-x-2 flex-wrap'>
-          {parts.map(part => (
-            <div key={part.id} className='badge badge-soft badge-primary badge-sm flex-none mt-2'>
-              <h4 className='flex-none'>
-                {part.part_number}
-              </h4>
-            </div>
-          ))}
+        <div className='flex items-start justify-start space-x-2 flex-wrap pointer-events-auto'>
+          <PartTags parts={parts} />
         </div>
 
         <div className='flex items-center justify-start space-x-4 mt-2'>
@@ -61,30 +48,6 @@ async function DesignEntry ({ entry, repository }) {
   )
 }
 
-function repositoryKey (owner, repo) {
-  return `${owner}/${repo}`
-}
-
-async function fetchRepositoriesByKey (designs) {
-  const uniqueRepos = [...new Map(
-    designs.map(({ repository }) => [repositoryKey(repository.owner.login, repository.name), repository])
-  ).values()]
-
-  const entries = await Promise.all(
-    uniqueRepos.map(async ({ owner, name }) => {
-      try {
-        const repository = await getRepository(owner.login, name)
-        return [repositoryKey(owner.login, name), repository]
-      } catch (error) {
-        console.error(`Error fetching repository ${owner.login}/${name}:`, error.status ?? error)
-        return [repositoryKey(owner.login, name), null]
-      }
-    })
-  )
-
-  return new Map(entries)
-}
-
 function NoDesignsFound () {
   return (
     <div className='text-left mt-8'>
@@ -93,28 +56,15 @@ function NoDesignsFound () {
   )
 }
 
-export default async function DesignResults ({ designs }) {
+export default function DesignResults ({ designs }) {
   if (designs.length === 0) {
-    return <NoDesignsFound />
-  }
-
-  const repositoriesByKey = await fetchRepositoriesByKey(designs)
-
-  const entriesWithRepository = designs
-    .map(entry => ({
-      entry,
-      repository: repositoriesByKey.get(repositoryKey(entry.repository.owner.login, entry.repository.name))
-    }))
-    .filter(({ repository }) => repository != null)
-
-  if (entriesWithRepository.length === 0) {
     return <NoDesignsFound />
   }
 
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto px-16 mt-4'>
-      {entriesWithRepository.map(({ entry, repository }) => (
-        <DesignEntry key={entry.sha} entry={entry} repository={repository} />
+      {designs.map(entry => (
+        <DesignEntry key={entry.id} entry={entry} />
       ))}
     </div>
   )

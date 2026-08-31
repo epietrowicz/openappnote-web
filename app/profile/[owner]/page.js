@@ -1,5 +1,5 @@
 import DesignResults from '@/app/ui/design-results'
-import { searchKicadSchematics } from '@/lib/github-search'
+import { searchDesigns } from '@/lib/design-search'
 import { getGithubUser } from '@/lib/github-user'
 import Breadcrumbs from '@/app/ui/breadcrumbs'
 import JsonLd from '@/app/ui/json-ld'
@@ -21,7 +21,7 @@ async function fetchGithubUser (owner) {
 
 async function getOwnerDesigns (owner, pageNum) {
   try {
-    const { results, totalHits } = await searchKicadSchematics(`user:${owner}`, pageNum)
+    const { results, totalHits } = await searchDesigns(`user:${owner}`, pageNum)
     return { designs: results, totalCount: totalHits }
   } catch (error) {
     console.error('Error fetching GitHub designs:', error)

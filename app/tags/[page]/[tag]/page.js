@@ -1,5 +1,5 @@
 import DesignResults from '@/app/ui/design-results'
-import { searchKicadSchematics } from '@/lib/github-search'
+import { searchDesigns } from '@/lib/design-search'
 import Pagination from '@/app/ui/pagination'
 import Breadcrumbs from '@/app/ui/breadcrumbs'
 import JsonLd from '@/app/ui/json-ld'
@@ -17,7 +17,7 @@ export async function generateMetadata ({ params }) {
 
   let totalHits = 0
   try {
-    ({ totalHits } = await searchKicadSchematics(tag, pageNumber))
+    ({ totalHits } = await searchDesigns(tag, pageNumber))
   } catch {
     totalHits = 0
   }
@@ -40,7 +40,7 @@ export async function generateMetadata ({ params }) {
 
 async function fetchSearchResults (query, page) {
   try {
-    return await searchKicadSchematics(query, page)
+    return await searchDesigns(query, page)
   } catch (error) {
     console.error('Error fetching search results:', error)
     return notFound()

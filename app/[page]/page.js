@@ -1,25 +1,6 @@
 import { NUM_RESULTS_PER_PAGE } from '@/lib/util'
-import { supabaseService } from '@/lib/db'
 import DesignResults from '@/app/ui/design-results'
 import Pagination from '@/app/ui/pagination'
-
-// export async function getDesigns (pageNum) {
-//   const startingOffset = (pageNum - 1) * NUM_RESULTS_PER_PAGE
-//   const endingOffset = startingOffset + NUM_RESULTS_PER_PAGE - 1
-
-//   const { data, error } = await supabaseService
-//     .from('design')
-//     .select('*, repository!inner(id, stars, avatar_url, process_state)')
-//     .eq('repository.process_state', 'PROCESSED')
-//     .order('repository(stars)', { ascending: false })
-//     .range(startingOffset, endingOffset)
-
-//   if (error) {
-//     console.log(error)
-//     return []
-//   }
-//   return data
-// }
 
 export default async function Home ({ params }) {
   const page = (await params).page ?? '1'

@@ -52,21 +52,31 @@ export async function generateMetadata ({ params }) {
   }
 }
 
-async function fetchBom (rootSchUrl, remainingSchUrls) {
-  const res = await fetch(`${getPublicApiUrl()}/github/bom`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ rootUrl: rootSchUrl, urls: remainingSchUrls })
-  })
-  if (!res.ok) {
-    return notFound()
-  }
+const BOM_TIMEOUT_MS = 30_000
 
-  const csv = await res.text()
-  const { data: parts } = Papa.parse(csv, { header: true, skipEmptyLines: true })
-  return parts
+// A BOM failure (service down, a transient 500, a timeout, an unparseable
+// response) shouldn't take down the whole page - the design still exists and
+// the schematic/PCB viewers below don't depend on the BOM table. Degrade to an
+// empty parts list instead of notFound(), same as the no-root-schematic case.
+async function fetchBom (rootSchUrl, remainingSchUrls) {
+  try {
+    const res = await fetch(`${getPublicApiUrl()}/github/bom`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ rootUrl: rootSchUrl, urls: remainingSchUrls }),
+      signal: AbortSignal.timeout(BOM_TIMEOUT_MS)
+    })
+    if (!res.ok) return []
+
+    const csv = await res.text()
+    const { data: parts } = Papa.parse(csv, { header: true, skipEmptyLines: true })
+    return parts
+  } catch (error) {
+    console.error(`BOM generation failed for ${rootSchUrl}:`, error)
+    return []
+  }
 }
 
 async function fetchDesign (owner, repo) {
@@ -119,6 +129,10 @@ export default async function ({ params }) {
     : []
   const pcbFiles = rawProjectUrls.filter(url => url.endsWith('.kicad_pcb'))
 
+  console.log('Schematic files:', schematicFiles)
+  console.log('Root schematic URL:', rootSchUrl)
+  console.log('PCB files:', pcbFiles)
+
   const designHref = `/designs/${owner}/${repo}/${schPath}`
 
   const breadcrumbItems = [
@@ -142,7 +156,7 @@ export default async function ({ params }) {
   }
 
   return (
-    <div className='w-full max-w-5xl mx-auto px-4'>
+    <div>
       <JsonLd data={breadcrumbListSchema(breadcrumbItems)} />
       <JsonLd data={softwareSourceCodeSchema} />
       <Breadcrumbs items={breadcrumbItems} />
@@ -199,6 +213,7 @@ export default async function ({ params }) {
       <div className='flex items-center justify-between mt-6 mb-2'>
         <h2 className='text-lg font-bold capitalize'>{repository.name} board</h2>
       </div>
+
       <KicanvasRemoteContent fileUrls={pcbFiles} />
     </div>
   )

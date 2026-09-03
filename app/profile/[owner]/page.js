@@ -69,8 +69,9 @@ export default async function ProfilePage ({ params }) {
     <div>
       <JsonLd data={breadcrumbListSchema(breadcrumbItems)} />
       <JsonLd data={personSchema} />
+      <Breadcrumbs items={breadcrumbItems} />
+
       <div className='mx-auto flex flex-col items-center justify-center mt-6 max-w-lg'>
-        <Breadcrumbs items={breadcrumbItems} />
         <Image
           unoptimized
           className='rounded-full'

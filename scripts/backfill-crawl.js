@@ -26,6 +26,14 @@
 const DEFAULT_BASE_URL = 'http://localhost:5173'
 const DEFAULT_ROUNDS = 20
 const VALID_TARGETS = ['local', 'production']
+// Comfortably above the server's own ~270s budget plus local dev-mode overhead.
+// Node's global fetch (undici) has a hard-coded 5-minute headersTimeout/
+// bodyTimeout that AbortSignal.timeout() does NOT override - it's a separate,
+// per-stage timeout on the underlying connection, so it has to be raised via a
+// custom dispatcher instead, or a slow-but-healthy round gets killed client-side
+// before the server can respond. A transport failure here doesn't mean the
+// round's work was lost server-side - the crawl state is resumable.
+const FETCH_TIMEOUT_MS = 320_000
 
 async function main () {
   const baseUrl = process.env.CRAWL_BASE_URL || DEFAULT_BASE_URL
@@ -52,9 +60,17 @@ async function main () {
     if (target) url.searchParams.set('target', target)
 
     console.log(`Backfill round ${round}/${rounds}${target ? ` (target: ${target})` : ''}...`)
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${cronSecret}` }
-    })
+
+    let response
+    try {
+      response = await fetch(url, {
+        headers: { Authorization: `Bearer ${cronSecret}` },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      })
+    } catch (error) {
+      console.error(`Round ${round} failed to connect: ${error.cause ?? error.message}. Continuing to the next round - the server-side crawl state is resumable, so this round's progress isn't lost.`)
+      continue
+    }
 
     if (!response.ok) {
       console.error(`Round ${round} failed with status ${response.status}: ${await response.text()}`)

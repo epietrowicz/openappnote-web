@@ -31,8 +31,15 @@ export async function GET (request) {
   }
   const client = createMeilisearchClient(requestedTarget)
 
-  await ensureIndexes(client)
-  const summary = await runChannelACrawl({ budgetMs, client })
-
-  return NextResponse.json({ ...summary, target: requestedTarget ?? 'auto' })
+  try {
+    await ensureIndexes(client)
+    const summary = await runChannelACrawl({ budgetMs, client })
+    return NextResponse.json({ ...summary, target: requestedTarget ?? 'auto' })
+  } catch (error) {
+    console.error('Crawl failed:', error)
+    return NextResponse.json({
+      error: error.message ?? 'Crawl failed',
+      target: requestedTarget ?? 'auto'
+    }, { status: 500 })
+  }
 }
